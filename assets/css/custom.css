@@ -1,0 +1,63 @@
+/* ===== Compactação ~30% (Tabler/Bootstrap) ===== */
+
+/* حجم أساس قابل للتغيير */
+:root {
+  --base-font-size: 16px; /* padrão */
+}
+
+/* اجعل الجذر يأخذ المتغير + fallback. ضع custom.css بعد tabler.min.css */
+html {
+  font-size: var(--base-font-size, 16px) !important;
+}
+
+/* لا تستخدم scale على .card/.table لأنه يكسر التخطيطات ومساحات النقر */
+
+/* مسافات أضيق */
+.card-body { padding: .75rem .9rem; }
+.card-header { padding: .55rem .9rem; }
+.page-header .page-title { font-size: 1.1rem; }
+
+/* عناوين أصغر */
+.h1 { font-size: 1.6rem; }
+.h2 { font-size: 1.25rem; }
+.h3 { font-size: 1.05rem; }
+.subheader { font-size: .725rem; letter-spacing: .02em; }
+
+/* جداول مدمجة */
+.table td,
+.table th { padding: .45rem .5rem; }
+.card-table .table { margin-bottom: 0; }
+
+/* أفاتار أصغر */
+.avatar { width: 36px; height: 36px; border-radius: 10px; }
+
+/* شبكة مدمجة */
+.row-g-compact > .col,
+.row-g-compact > .col-auto,
+.row-g-compact > [class^="col-"] {
+  padding-top: .35rem;
+  padding-bottom: .35rem;
+}
+
+/* شريط تقدم أرفع */
+.progress { height: .5rem; }
+
+/* شارة حالة أنحف */
+.badge { padding: .25rem .4rem; font-weight: 600; }
+
+/* أزرار داخل الجداول أصغر */
+.table .btn { padding: .25rem .45rem; font-size: .8rem; }
+
+/* ترويسة الكروت */
+.card-header .card-title { font-size: .95rem; }
+
+/* لون النص الثانوي (النسخة المحسّنة)
+  استخدام متغيرات CSS يضمن التوافق التلقائي مع الوضع المظلم.
+*/
+.text-muted {
+  /* لإطار Bootstrap 5+ */
+  color: var(--bs-secondary-color) !important; 
+  
+  /* لإطار Tabler */
+  /* color: var(--tblr-muted) !important; */
+}
