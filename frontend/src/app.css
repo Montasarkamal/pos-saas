@@ -155,4 +155,14 @@
   .badge-soft {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
   }
+
+  /* Copyable cells (clients) */
+  .copyable {
+    @apply relative inline-block cursor-pointer select-none rounded transition hover:bg-brand-500/10;
+  }
+  .copy-tooltip {
+    @apply absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full rounded-md bg-emerald-500
+           px-1.5 py-0.5 text-[10px] font-bold whitespace-nowrap text-white shadow-md;
+  }
+  .is-hidden { display: none; }
 }

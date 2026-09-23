@@ -1,10 +1,11 @@
 <?php
-// clients/index.php
+// clients/index.php — modern layout (Phase 2)
 declare(strict_types=1);
 
 require_once __DIR__ . '/../inc/db.php';
 require_once __DIR__ . '/../inc/auth.php';
 require_once __DIR__ . '/../inc/helpers.php';
+require_once __DIR__ . '/../inc/ui.php';
 require_login();
 
 if (!function_exists('h')) {
@@ -30,16 +31,17 @@ function client_sort_link(string $key, string $label, string $currentSort, strin
     $params['dir'] = $nextDir;
     $icon = '';
     if ($currentSort === $key) {
-        $icon = strtolower($currentDir) === 'asc' ? ' <i class="ti ti-chevron-up"></i>' : ' <i class="ti ti-chevron-down"></i>';
+        $icon = strtolower($currentDir) === 'asc' ? '↑' : '↓';
     }
-    return '<a class="client-sort-link" href="?' . h(http_build_query($params)) . '">' . h($label) . $icon . '</a>';
+    $active = $icon !== '' ? ' font-bold text-ink-900' : '';
+    return '<a class="inline-flex items-center gap-1 whitespace-nowrap text-ink-500 transition hover:text-ink-900'.$active.'" href="?'.h(http_build_query($params)).'">'.h($label).($icon !== '' ? '<span class="text-brand-600">'.$icon.'</span>' : '').'</a>';
 }
 
 function client_type_badge(?string $type): string {
     if ($type === 'pj') {
-        return '<span class="badge bg-blue-lt">Empresa</span>';
+        return '<span class="badge-soft bg-blue-100 text-blue-700">Empresa</span>';
     }
-    return '<span class="badge bg-green-lt">Pessoa</span>';
+    return '<span class="badge-soft bg-emerald-100 text-emerald-700">Pessoa</span>';
 }
 
 function client_is_incomplete(array $client): bool {
@@ -70,18 +72,20 @@ $contact = (string)($_GET['contact'] ?? '');
 $birth = (string)($_GET['birth'] ?? '');
 $employer = trim((string)($_GET['employer'] ?? ''));
 
+$pageTitle = 'Clientes';
+
 if (!has_table($pdo, 'clients')) {
     $token = csrf_token();
-    $pageTitle = 'Clientes';
-    require_once __DIR__ . '/../inc/header.php';
+    ob_start();
     ?>
-    <div class="page-body">
-      <div class="container-xl">
-        <div class="alert alert-warning mt-3">Tabela de clientes não está disponível na base atual.</div>
-      </div>
+    <div class="card p-8 text-center">
+        <p class="text-sm font-medium text-amber-700">Tabela de clientes não está disponível na base atual.</p>
     </div>
-    <?php require_once __DIR__ . '/../inc/footer.php'; exit; ?>
-<?php }
+    <?php
+    $body = ob_get_clean();
+    require __DIR__ . '/../inc/layout.php';
+    exit;
+}
 
 [$agencyCondition, $agencyParams] = agency_scope_sql('c.agency_id');
 $whereParts = [$agencyCondition];
@@ -180,236 +184,109 @@ $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
 $hasFilters = $q !== '' || in_array($type, ['pf', 'pj'], true) || $contact !== '' || $birth !== '' || $employer !== '';
 $token = csrf_token();
-$pageTitle = 'Clientes';
-require_once __DIR__ . '/../inc/header.php';
+
+ob_start();
 ?>
+<!-- Header -->
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <h2 class="text-xl font-bold text-ink-950">Clientes</h2>
+        <p class="mt-0.5 text-sm text-ink-500">Busca por nome, CPF/CNPJ, telefone, e-mail, endereço e empresa vinculada.</p>
+    </div>
+    <a href="/clients/create.php" class="btn-primary">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+        Novo cliente
+    </a>
+</div>
 
-<style>
-.clients-search-panel {
-    border: 1px solid #dbe5f2;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, .04);
-}
-.client-stat {
-    display: grid;
-    gap: .15rem;
-    padding: .85rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: #fff;
-}
-.client-stat strong {
-    font-size: 1.25rem;
-    color: #0f172a;
-}
-.client-stat span {
-    color: #64748b;
-    font-weight: 700;
-    font-size: .76rem;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-}
-.clients-table td {
-    vertical-align: middle;
-}
-.client-main-name {
-    display: grid;
-    gap: .12rem;
-}
-.client-main-name a {
-    color: #111827;
-    font-weight: 800;
-    text-decoration: none;
-}
-.client-main-name a:hover {
-    color: #2563eb;
-}
-.client-subline {
-    color: #64748b;
-    font-size: .82rem;
-}
-.client-name-row {
-    display: inline-flex;
-    align-items: center;
-    gap: .45rem;
-}
-.client-name-copy {
-    color: #111827;
-    font-weight: 800;
-    padding: .1rem .2rem;
-}
-.client-badges {
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-    flex-wrap: wrap;
-}
-.client-inline-filter {
-    max-width: 320px;
-}
-.clients-table tbody tr.is-hidden {
-    display: none;
-}
-.client-sort-link {
-    color: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: .18rem;
-    text-decoration: none;
-}
-.client-sort-link:hover {
-    color: #2563eb;
-}
-.copyable {
-    cursor: pointer;
-    position: relative;
-    border-radius: 6px;
-    transition: background .15s ease;
-}
-.copyable:hover {
-    background: rgba(37, 99, 235, .08);
-}
-.copy-tooltip {
-    position: absolute;
-    top: -1.35rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #16a34a;
-    color: #fff;
-    font-size: .68rem;
-    font-weight: 800;
-    padding: .18rem .45rem;
-    border-radius: 5px;
-    z-index: 20;
-    white-space: nowrap;
-}
-.clients-empty {
-    padding: 3rem 1rem;
-    text-align: center;
-    color: #64748b;
-}
-.clients-empty i {
-    display: block;
-    color: #94a3b8;
-    font-size: 2.5rem;
-    margin-bottom: .75rem;
-}
-</style>
-
-<div class="page-header d-print-none mb-3">
-    <div class="row align-items-center g-3">
-        <div class="col">
-            <h2 class="page-title">Clientes</h2>
-            <div class="text-muted mt-1">Busca por nome, CPF/CNPJ, telefone, e-mail, endereço, observações e empresa vinculada.</div>
-        </div>
-        <div class="col-auto">
-            <a href="/clients/create.php" class="btn btn-primary">
-                <i class="ti ti-user-plus"></i>Novo cliente
-            </a>
-        </div>
+<!-- KPIs -->
+<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card p-5">
+        <p class="stat-label">Total de clientes</p>
+        <p class="stat-value"><?= (int)($stats['total'] ?? 0) ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Pessoas físicas</p>
+        <p class="stat-value"><?= (int)($stats['pf'] ?? 0) ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Empresas</p>
+        <p class="stat-value"><?= (int)($stats['pj'] ?? 0) ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Com nascimento</p>
+        <p class="stat-value"><?= (int)($stats['with_birth'] ?? 0) ?></p>
     </div>
 </div>
 
-<div class="row row-cards mb-3">
-    <div class="col-sm-6 col-lg-3">
-        <div class="client-stat">
-            <strong><?= (int)($stats['total'] ?? 0) ?></strong>
-            <span>Total de clientes</span>
+<!-- Filtros -->
+<div class="card mb-5 p-5">
+    <form method="get" class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-4">
+            <label class="label-field" for="c-q">Busca geral</label>
+            <input id="c-q" class="input-field" type="text" name="q" value="<?= h($q) ?>" placeholder="Nome, documento, telefone, e-mail, endereço...">
         </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-        <div class="client-stat">
-            <strong><?= (int)($stats['pf'] ?? 0) ?></strong>
-            <span>Pessoas físicas</span>
+        <div class="xl:col-span-2">
+            <label class="label-field" for="c-type">Tipo</label>
+            <select id="c-type" class="select-field" name="type">
+                <option value="">Todos</option>
+                <option value="pf" <?= $type === 'pf' ? 'selected' : '' ?>>Pessoa física</option>
+                <option value="pj" <?= $type === 'pj' ? 'selected' : '' ?>>Empresa</option>
+            </select>
         </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-        <div class="client-stat">
-            <strong><?= (int)($stats['pj'] ?? 0) ?></strong>
-            <span>Empresas</span>
+        <div class="xl:col-span-2">
+            <label class="label-field" for="c-contact">Contato</label>
+            <select id="c-contact" class="select-field" name="contact">
+                <option value="">Todos</option>
+                <option value="with_email" <?= $contact === 'with_email' ? 'selected' : '' ?>>Com e-mail</option>
+                <option value="missing_email" <?= $contact === 'missing_email' ? 'selected' : '' ?>>Sem e-mail</option>
+                <option value="with_phone" <?= $contact === 'with_phone' ? 'selected' : '' ?>>Com telefone</option>
+                <option value="missing_phone" <?= $contact === 'missing_phone' ? 'selected' : '' ?>>Sem telefone</option>
+            </select>
         </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-        <div class="client-stat">
-            <strong><?= (int)($stats['with_birth'] ?? 0) ?></strong>
-            <span>Com nascimento</span>
+        <div class="xl:col-span-2">
+            <label class="label-field" for="c-birth">Nascimento</label>
+            <select id="c-birth" class="select-field" name="birth">
+                <option value="">Todos</option>
+                <option value="with_birth" <?= $birth === 'with_birth' ? 'selected' : '' ?>>Com nascimento</option>
+                <option value="missing_birth" <?= $birth === 'missing_birth' ? 'selected' : '' ?>>Sem nascimento</option>
+            </select>
         </div>
-    </div>
-</div>
-
-<div class="card clients-search-panel mb-3">
-    <form method="get" class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-4">
-                <label class="form-label">Busca geral</label>
-                <div class="input-icon">
-                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
-                    <input type="text" name="q" value="<?= h($q) ?>" class="form-control" placeholder="Nome, documento, telefone, e-mail, endereço...">
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <label class="form-label">Tipo</label>
-                <select name="type" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="pf" <?= $type === 'pf' ? 'selected' : '' ?>>Pessoa física</option>
-                    <option value="pj" <?= $type === 'pj' ? 'selected' : '' ?>>Empresa</option>
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <label class="form-label">Contato</label>
-                <select name="contact" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="with_email" <?= $contact === 'with_email' ? 'selected' : '' ?>>Com e-mail</option>
-                    <option value="missing_email" <?= $contact === 'missing_email' ? 'selected' : '' ?>>Sem e-mail</option>
-                    <option value="with_phone" <?= $contact === 'with_phone' ? 'selected' : '' ?>>Com telefone</option>
-                    <option value="missing_phone" <?= $contact === 'missing_phone' ? 'selected' : '' ?>>Sem telefone</option>
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <label class="form-label">Nascimento</label>
-                <select name="birth" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="with_birth" <?= $birth === 'with_birth' ? 'selected' : '' ?>>Com nascimento</option>
-                    <option value="missing_birth" <?= $birth === 'missing_birth' ? 'selected' : '' ?>>Sem nascimento</option>
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <label class="form-label">Empresa vinculada</label>
-                <input type="text" name="employer" value="<?= h($employer) ?>" class="form-control" placeholder="Nome da empresa">
-            </div>
-            <div class="col-lg-2">
-                <div class="btn-list justify-content-lg-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-search"></i>Buscar
-                    </button>
-                    <?php if ($hasFilters): ?>
-                        <a href="/clients/index.php" class="btn btn-outline-secondary">
-                            <i class="ti ti-x"></i>Limpar
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
+        <div class="xl:col-span-2">
+            <label class="label-field" for="c-employer">Empresa vinculada</label>
+            <input id="c-employer" class="input-field" type="text" name="employer" value="<?= h($employer) ?>" placeholder="Nome da empresa">
+        </div>
+        <div class="flex gap-2 md:col-span-2 xl:col-span-12">
+            <button class="btn-primary flex-1 sm:flex-none sm:px-8" type="submit">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Buscar
+            </button>
+            <?php if ($hasFilters): ?>
+                <a class="btn-ghost" href="/clients/index.php">Limpar</a>
+            <?php endif; ?>
         </div>
     </form>
 </div>
 
-<div class="card">
-    <div class="card-header">
+<!-- Resultado -->
+<div class="card overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
         <div>
-            <h3 class="card-title">Resultado da busca</h3>
-            <div class="text-muted mt-1">
-                <?= $totalResults ?> registro<?= $totalResults === 1 ? '' : 's' ?> encontrado<?= $totalResults === 1 ? '' : 's' ?><?= $totalResults > 500 ? ' - exibindo os primeiros 500' : '' ?>.
-                <?= (int)($stats['incomplete'] ?? 0) ?> com dados incompletos.
-            </div>
+            <h3 class="text-sm font-bold text-ink-950">Resultado da busca</h3>
+            <p class="mt-0.5 text-xs text-ink-500">
+                <?= $totalResults ?> registro<?= $totalResults === 1 ? '' : 's' ?> encontrado<?= $totalResults === 1 ? '' : 's' ?><?= $totalResults > 500 ? ' — exibindo os primeiros 500' : '' ?>.
+                <?php if ((int)($stats['incomplete'] ?? 0) > 0): ?>
+                    <span class="text-amber-600"><?= (int)$stats['incomplete'] ?> com dados incompletos.</span>
+                <?php endif; ?>
+            </p>
         </div>
-        <div class="ms-auto client-inline-filter">
-            <div class="input-icon">
-                <span class="input-icon-addon"><i class="ti ti-filter-search"></i></span>
-                <input type="search" id="clientQuickFilter" class="form-control" placeholder="Filtrar resultados visíveis...">
-            </div>
+        <div class="w-full max-w-xs">
+            <input type="search" id="clientQuickFilter" class="input-field" placeholder="Filtrar resultados visíveis...">
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-vcenter card-table clients-table">
+
+    <div class="overflow-x-auto">
+        <table class="table-modern min-w-[1180px]">
             <thead>
                 <tr>
                     <th><?= client_sort_link('id', 'ID', $sortKey, $dir) ?></th>
@@ -421,7 +298,7 @@ require_once __DIR__ . '/../inc/header.php';
                     <th><?= client_sort_link('email', 'E-mail', $sortKey, $dir) ?></th>
                     <th><?= client_sort_link('employer', 'Empresa', $sortKey, $dir) ?></th>
                     <th><?= client_sort_link('created', 'Criado em', $sortKey, $dir) ?></th>
-                    <th class="text-end">Ações</th>
+                    <th class="sticky right-0 bg-white text-right">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -441,46 +318,34 @@ require_once __DIR__ . '/../inc/header.php';
                             $incomplete = client_is_incomplete($r);
                         ?>
                         <tr data-client-search="<?= h(mb_strtolower($searchText, 'UTF-8')) ?>">
-                            <td class="text-muted">#<?= (int)$r['id'] ?></td>
+                            <td class="text-ink-400">#<?= (int)$r['id'] ?></td>
                             <td>
-                                <div class="client-main-name">
-                                    <span class="client-name-row">
-                                        <span class="client-name-copy copyable" data-copy="<?= h($r['name'] ?? '') ?>"><?= h($r['name']) ?></span>
-                                    </span>
-                                    <span class="client-badges">
-                                        <?php if ($incomplete): ?>
-                                            <span class="badge bg-yellow-lt">Dados incompletos</span>
-                                        <?php endif; ?>
-                                    </span>
+                                <div class="min-w-[260px]">
+                                    <span class="copyable" data-copy="<?= h($r['name'] ?? '') ?>"><?= h($r['name']) ?></span>
+                                    <?php if ($incomplete): ?>
+                                        <span class="badge-soft ml-2 bg-amber-100 text-amber-700">Dados incompletos</span>
+                                    <?php endif; ?>
                                     <?php if (!empty($r['address'])): ?>
-                                        <span class="client-subline"><?= h($r['address']) ?></span>
+                                        <p class="mt-0.5 text-xs text-ink-400"><?= h($r['address']) ?></p>
                                     <?php endif; ?>
                                 </div>
                             </td>
                             <td><?= client_type_badge($r['client_type'] ?? null) ?></td>
-                            <td class="copyable" data-copy="<?= h($r['document'] ?? '') ?>"><?= h($r['document'] ?: '—') ?></td>
+                            <td class="copyable font-mono text-xs" data-copy="<?= h($r['document'] ?? '') ?>"><?= h($r['document'] ?: '—') ?></td>
                             <td class="copyable" data-copy="<?= !empty($r['birth_date']) ? h(client_date_br($r['birth_date'])) : '' ?>"><?= client_date_br($r['birth_date'] ?? null) ?></td>
                             <td><?= h($r['phone'] ?: '—') ?></td>
                             <td><?= h($r['email'] ?: '—') ?></td>
                             <td><?= h($r['employer_name'] ?: '—') ?></td>
-                            <td><?= client_date_br($r['created_at'] ?? null) ?></td>
-                            <td class="text-end">
-                                <div class="btn-list justify-content-end">
-                                    <a href="/clients/show.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-secondary">
-                                        <i class="ti ti-eye"></i>Ver
-                                    </a>
-                                    <a href="/clients/edit.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                        <i class="ti ti-edit"></i>Editar
-                                    </a>
-                                    <a href="/sales/create.php?client_id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-success">
-                                        <i class="ti ti-receipt"></i>Venda
-                                    </a>
-                                    <form action="/clients/delete.php" method="post" onsubmit="return confirm('Excluir este cliente?');" class="d-inline">
+                            <td class="text-ink-500"><?= client_date_br($r['created_at'] ?? null) ?></td>
+                            <td class="sticky right-0 bg-white">
+                                <div class="flex flex-wrap justify-end gap-1.5">
+                                    <a class="btn-soft" href="/clients/show.php?id=<?= (int)$r['id'] ?>">Ver</a>
+                                    <a class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50" href="/clients/edit.php?id=<?= (int)$r['id'] ?>">Editar</a>
+                                    <a class="btn-soft border-emerald-200 text-emerald-700 hover:bg-emerald-50" href="/sales/create.php?client_id=<?= (int)$r['id'] ?>">Venda</a>
+                                    <form action="/clients/delete.php" method="post" onsubmit="return confirm('Excluir este cliente?');">
                                         <input type="hidden" name="csrf" value="<?= h($token) ?>">
                                         <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="ti ti-trash"></i>Excluir
-                                        </button>
+                                        <button type="submit" class="btn-soft border-red-200 text-red-700 hover:bg-red-50">Excluir</button>
                                     </form>
                                 </div>
                             </td>
@@ -488,12 +353,9 @@ require_once __DIR__ . '/../inc/header.php';
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="10">
-                            <div class="clients-empty">
-                                <i class="ti ti-users-off"></i>
-                                <div class="h3 mb-1">Nenhum cliente encontrado</div>
-                                <div>Ajuste os filtros ou cadastre um novo cliente.</div>
-                            </div>
+                        <td colspan="10" class="px-4 py-12 text-center">
+                            <p class="text-sm font-semibold text-ink-700">Nenhum cliente encontrado</p>
+                            <p class="mt-1 text-sm text-ink-400">Ajuste os filtros ou cadastre um novo cliente.</p>
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -531,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const quickFilter = document.getElementById('clientQuickFilter');
     if (!quickFilter) return;
 
-    const rows = Array.from(document.querySelectorAll('.clients-table tbody tr[data-client-search]'));
+    const rows = Array.from(document.querySelectorAll('tr[data-client-search]'));
     quickFilter.addEventListener('input', function () {
         const needle = quickFilter.value.trim().toLowerCase();
         rows.forEach(function (row) {
@@ -541,5 +403,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
