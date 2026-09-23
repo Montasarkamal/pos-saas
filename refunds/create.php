@@ -128,136 +128,140 @@ $passengersStmt = $pdo->prepare("SELECT id, name FROM passengers WHERE agency_id
 $passengersStmt->execute([agency_id()]);
 $passengers = $passengersStmt->fetchAll(PDO::FETCH_ASSOC);
 
-require_once '../inc/header.php';
+ob_start();
 ?>
-<div class="page-header d-print-none">
-  <div class="container-xl">
-    <div class="row g-2 align-items-center">
-      <div class="col">
-        <h2 class="page-title">
-          Nova Solicitação de Reembolso
-        </h2>
+<div class="mx-auto max-w-4xl">
+
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Reembolsos</p>
+      <h2 class="text-xl font-bold text-ink-950">Nova Solicitação de Reembolso</h2>
+      <p class="mt-1 text-sm text-ink-500">Registre a solicitação, valores e o comprovante da operação.</p>
+    </div>
+    <a href="index.php" class="btn-ghost">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+      Voltar
+    </a>
+  </div>
+
+  <?php if (!empty($errors)): ?>
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800" role="alert">
+      <ul class="list-disc space-y-1 pl-4">
+        <?php foreach ($errors as $e): ?>
+          <li><?= htmlspecialchars($e) ?></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+  <?php endif; ?>
+
+  <form class="card overflow-hidden" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+    <div class="border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Dados do Reembolso</h3>
+    </div>
+    <div class="p-5">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div>
+          <label class="label-field" for="client_id">Cliente *</label>
+          <select name="client_id" id="client_id" class="select-field" required>
+            <option value="">Selecione...</option>
+            <?php foreach ($clients as $c): ?>
+              <option value="<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div>
+          <label class="label-field" for="invoice_id">Venda (opcional)</label>
+          <select name="invoice_id" id="invoice_id" class="select-field">
+            <option value="">Nenhuma</option>
+            <?php foreach ($invoices as $i): ?>
+              <option value="<?= (int)$i['id'] ?>">
+                #<?= (int)$i['id'] ?> - <?= htmlspecialchars($i['invoice_number']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div>
+          <label class="label-field" for="passenger_id">Passageiro (opcional)</label>
+          <select name="passenger_id" id="passenger_id" class="select-field">
+            <option value="">Nenhum</option>
+            <?php foreach ($passengers as $p): ?>
+              <option value="<?= (int)$p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div>
+          <label class="label-field" for="supplier_id">Fornecedor (opcional)</label>
+          <select name="supplier_id" id="supplier_id" class="select-field">
+            <option value="">Nenhum</option>
+            <?php foreach ($suppliers as $s): ?>
+              <option value="<?= (int)$s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div>
+          <label class="label-field" for="type">Tipo *</label>
+          <select name="type" id="type" class="select-field" required>
+            <option value="">Selecione...</option>
+            <option value="AEREO">Aéreo</option>
+            <option value="HOTEL">Hotel</option>
+            <option value="CARRO">Carro</option>
+            <option value="OUTRO">Outro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label-field" for="data_solicitacao">Data da Solicitação *</label>
+          <input type="date" name="data_solicitacao" id="data_solicitacao" value="<?= date('Y-m-d') ?>" class="input-field" required>
+        </div>
+
+        <div class="sm:col-span-2 lg:col-span-2">
+          <label class="label-field" for="motivo">Motivo *</label>
+          <input type="text" name="motivo" id="motivo" class="input-field" required>
+        </div>
+
+        <div>
+          <label class="label-field" for="comprovante">Comprovante (PDF/JPG/PNG)</label>
+          <input type="file" name="comprovante" id="comprovante" class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700">
+        </div>
+
+        <div>
+          <label class="label-field" for="valor_pago">Valor pago (R$) *</label>
+          <input type="text" name="valor_pago" id="valor_pago" class="input-field" placeholder="1.234,56" required>
+        </div>
+
+        <div>
+          <label class="label-field" for="valor_reembolsavel">Valor reembolsável (R$) *</label>
+          <input type="text" name="valor_reembolsavel" id="valor_reembolsavel" class="input-field" placeholder="1.234,56" required>
+        </div>
+
+        <div class="sm:col-span-2 lg:col-span-3">
+          <label class="label-field" for="descricao">Descrição</label>
+          <textarea name="descricao" id="descricao" class="input-field" rows="3"></textarea>
+        </div>
+
+        <div class="sm:col-span-2 lg:col-span-3">
+          <label class="label-field" for="observacoes">Observações internas</label>
+          <textarea name="observacoes" id="observacoes" class="input-field" rows="3"></textarea>
+        </div>
+
       </div>
     </div>
-  </div>
+    <div class="flex items-center justify-end gap-3 border-t border-ink-100 bg-ink-50/50 px-5 py-4">
+      <a href="index.php" class="btn-ghost">Cancelar</a>
+      <button type="submit" class="btn-primary">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar e continuar
+      </button>
+    </div>
+  </form>
+
 </div>
-
-<div class="page-body">
-  <div class="container-xl">
-
-    <?php if (!empty($errors)): ?>
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          <?php foreach ($errors as $e): ?>
-            <li><?= htmlspecialchars($e) ?></li>
-          <?php endforeach; ?>
-        </ul>
-      </div>
-    <?php endif; ?>
-
-    <form class="card" method="post" enctype="multipart/form-data">
-      <input type="hidden" name="csrf" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
-      <div class="card-header">
-        <h3 class="card-title">Dados do Reembolso</h3>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-
-          <div class="col-md-4">
-            <label class="form-label">Cliente *</label>
-            <select name="client_id" class="form-select" required>
-              <option value="">Selecione...</option>
-              <?php foreach ($clients as $c): ?>
-                <option value="<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Venda (opcional)</label>
-            <select name="invoice_id" class="form-select">
-              <option value="">Nenhuma</option>
-              <?php foreach ($invoices as $i): ?>
-                <option value="<?= (int)$i['id'] ?>">
-                  #<?= (int)$i['id'] ?> - <?= htmlspecialchars($i['invoice_number']) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Passageiro (opcional)</label>
-            <select name="passenger_id" class="form-select">
-              <option value="">Nenhum</option>
-              <?php foreach ($passengers as $p): ?>
-                <option value="<?= (int)$p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Fornecedor (opcional)</label>
-            <select name="supplier_id" class="form-select">
-              <option value="">Nenhum</option>
-              <?php foreach ($suppliers as $s): ?>
-                <option value="<?= (int)$s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Tipo *</label>
-            <select name="type" class="form-select" required>
-              <option value="">Selecione...</option>
-              <option value="AEREO">Aéreo</option>
-              <option value="HOTEL">Hotel</option>
-              <option value="CARRO">Carro</option>
-              <option value="OUTRO">Outro</option>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Data da Solicitação *</label>
-            <input type="date" name="data_solicitacao" value="<?= date('Y-m-d') ?>" class="form-control" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Motivo *</label>
-            <input type="text" name="motivo" class="form-control" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Comprovante (PDF/JPG/PNG)</label>
-            <input type="file" name="comprovante" class="form-control">
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Valor pago (R$) *</label>
-            <input type="text" name="valor_pago" class="form-control" placeholder="1.234,56" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Valor reembolsável (R$) *</label>
-            <input type="text" name="valor_reembolsavel" class="form-control" placeholder="1.234,56" required>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label">Descrição</label>
-            <textarea name="descricao" class="form-control" rows="3"></textarea>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label">Observações internas</label>
-            <textarea name="observacoes" class="form-control" rows="3"></textarea>
-          </div>
-
-        </div>
-      </div>
-      <div class="card-footer text-end">
-        <a href="index.php" class="btn btn-link">Cancelar</a>
-        <button type="submit" class="btn btn-primary">Salvar e continuar</button>
-      </div>
-    </form>
-  </div>
-</div>
-<?php require_once '../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

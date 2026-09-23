@@ -1008,568 +1008,376 @@ $summaryItems = [
 ];
 
 $pageTitle = 'Backup';
-require_once __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-6xl">
 
-<style>
-.backup-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
-  gap: .8rem;
-}
-.backup-panel,
-.backup-danger {
-  border: 1px solid rgba(148, 163, 184, .2);
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
-  box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
-}
-.backup-panel-body,
-.backup-danger-body {
-  padding: .9rem;
-}
-.backup-lead {
-  color: #64748b;
-  line-height: 1.45;
-  max-width: 42rem;
-  font-size: .94rem;
-}
-.backup-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: .55rem;
-}
-.backup-kpi {
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: 10px;
-  padding: .55rem .7rem;
-  background: #fff;
-}
-.backup-kpi-label {
-  color: #64748b;
-  font-size: .74rem;
-  margin-bottom: .12rem;
-  line-height: 1.2;
-}
-.backup-kpi-value {
-  font-size: .9rem;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1.1;
-}
-.backup-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .85rem;
-}
-.backup-action-card {
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: 14px;
-  background: #fff;
-  min-height: 100%;
-}
-.backup-action-body {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: .75rem;
-  height: 100%;
-}
-.backup-action-head {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  color: #0f172a;
-}
-.backup-action-head i,
-.backup-side-top i,
-.backup-danger-top i {
-  font-size: 1rem;
-  color: #2563eb;
-}
-.backup-action-card h3,
-.backup-side-card h3,
-.backup-danger h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-.backup-action-card p,
-.backup-side-card p {
-  margin: 0;
-  color: #64748b;
-  line-height: 1.45;
-}
-.backup-side-stack {
-  display: grid;
-  gap: .7rem;
-}
-.backup-side-card {
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: 12px;
-  background: #fff;
-}
-.backup-side-body {
-  padding: .9rem;
-  display: flex;
-  flex-direction: column;
-  gap: .6rem;
-}
-.backup-side-top {
-  display: flex;
-  align-items: flex-start;
-  gap: .55rem;
-}
-.backup-danger {
-  border-color: rgba(239, 68, 68, .25);
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(254,242,242,.98));
-}
-.backup-danger-top {
-  display: flex;
-  align-items: flex-start;
-  gap: .55rem;
-  margin-bottom: .75rem;
-}
-.backup-danger .backup-danger-title {
-  color: #b91c1c;
-}
-.backup-danger .backup-danger-title + .text-muted {
-  margin-top: .15rem;
-}
-.backup-purge-options {
-  display: grid;
-  gap: .7rem;
-}
-.backup-purge-mode {
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: 12px;
-  padding: .8rem .9rem;
-  background: #fff;
-}
-.backup-purge-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .55rem .8rem;
-}
-.backup-counts-table td {
-  padding-top: .42rem;
-  padding-bottom: .42rem;
-}
-.backup-counts-table code {
-  font-size: .76rem;
-  padding: .18rem .38rem;
-}
-.backup-side-card p {
-  font-size: .92rem;
-}
-.backup-preview-card {
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: 14px;
-  background: #fff;
-}
-.backup-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .55rem;
-}
-.backup-preview-stat {
-  border: 1px solid rgba(148, 163, 184, .16);
-  border-radius: 10px;
-  padding: .65rem .75rem;
-  background: #f8fafc;
-}
-.backup-preview-stat-label {
-  color: #64748b;
-  font-size: .74rem;
-  margin-bottom: .15rem;
-}
-.backup-preview-stat-value {
-  color: #0f172a;
-  font-size: .95rem;
-  font-weight: 700;
-}
-@media (max-width: 1199px) {
-  .backup-hero,
-  .backup-actions {
-    grid-template-columns: 1fr;
-  }
-  .backup-preview-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 767px) {
-  .backup-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .backup-preview-grid {
-    grid-template-columns: 1fr;
-  }
-  .backup-purge-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
-
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Backup</h2>
-      <div class="text-muted small">Exportar backup completo, importar arquivo SQL ou copiar apenas clientes e fornecedores.</div>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Configurações</p>
+      <h2 class="text-xl font-bold text-ink-950">Backup</h2>
+      <p class="mt-1 text-sm text-ink-500">Exportar backup completo, importar arquivo SQL ou copiar apenas clientes e fornecedores.</p>
     </div>
-    <div class="col-auto ms-auto">
-      <a href="/settings/index.php" class="btn">
-        <i class="ti ti-arrow-left me-1"></i> Voltar
-      </a>
-    </div>
+    <a href="/settings/index.php" class="btn-ghost">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+      Voltar
+    </a>
   </div>
-</div>
 
-<?php if ($msg !== ''): ?>
-  <div class="alert alert-success"><?= h($msg) ?></div>
-<?php endif; ?>
-<?php if ($err !== ''): ?>
-  <div class="alert alert-danger"><?= h($err) ?></div>
-<?php endif; ?>
+  <?php if ($msg !== ''): ?>
+    <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="alert">
+      <?= h($msg) ?>
+    </div>
+  <?php endif; ?>
+  <?php if ($err !== ''): ?>
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+      <?= h($err) ?>
+    </div>
+  <?php endif; ?>
 
-<div class="backup-hero mb-3">
-  <div class="backup-panel">
-    <div class="backup-panel-body">
-      <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+  <div class="grid gap-5 lg:grid-cols-12">
+
+    <div class="card p-5 lg:col-span-8">
+      <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div class="text-muted small text-uppercase fw-semibold mb-1">Segurança da base</div>
-          <h3 class="card-title mb-2">Exportar, restaurar e limpar dados</h3>
-          <div class="backup-lead">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-ink-500">Segurança da base</p>
+          <h3 class="mt-1 text-base font-bold text-ink-950">Exportar, restaurar e limpar dados</h3>
+          <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-500">
             Use backup completo para recuperação total, estrutura sem dados para ambiente novo, e backup de contatos quando quiser migrar apenas clientes e fornecedores.
-          </div>
+          </p>
         </div>
-        <div class="text-muted small pt-1">
-          Formato padrão: <code>.sql</code>
-        </div>
+        <span class="rounded-full bg-ink-100 px-2.5 py-1 text-[11px] font-semibold text-ink-600">Formato padrão: <code>.sql</code></span>
       </div>
 
-      <div class="backup-summary">
+      <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <?php foreach ($summaryItems as $item): ?>
-          <div class="backup-kpi">
-            <div class="backup-kpi-label"><?= h($item['label']) ?></div>
-            <div class="backup-kpi-value"><?= $item['value'] === null ? '—' : (int)$item['value'] ?></div>
+          <div class="rounded-xl border border-ink-100 bg-white px-3 py-2.5">
+            <p class="text-[11px] font-medium text-ink-500"><?= h($item['label']) ?></p>
+            <p class="text-base font-bold text-ink-950"><?= $item['value'] === null ? '—' : (int)$item['value'] ?></p>
           </div>
         <?php endforeach; ?>
       </div>
     </div>
-  </div>
 
-  <div class="backup-side-stack">
-    <div class="backup-side-card">
-      <div class="backup-side-body">
-        <div class="backup-side-top">
-          <i class="ti ti-database"></i>
-          <div>
-            <h3>Resumo da base</h3>
-            <p>Contagem rápida das tabelas principais para validar o estado atual antes de exportar ou importar.</p>
-          </div>
+    <div class="space-y-4 lg:col-span-4">
+      <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+          <h3 class="text-sm font-bold text-ink-950">Resumo da base</h3>
         </div>
-        <div class="table-responsive">
-          <table class="table table-vcenter backup-counts-table mb-0">
+        <div class="p-5">
+          <p class="mb-3 text-xs text-ink-500">Contagem rápida das tabelas principais para validar o estado atual antes de exportar ou importar.</p>
+          <table class="table-modern">
             <tbody>
               <?php foreach ($counts as $table => $count): ?>
                 <tr>
-                  <td><code><?= h($table) ?></code></td>
-                  <td class="text-end fw-semibold"><?= $count === null ? '—' : (int)$count ?></td>
+                  <td><code class="rounded-md bg-ink-100 px-1.5 py-0.5 text-[11px] font-semibold text-ink-700"><?= h($table) ?></code></td>
+                  <td class="text-right font-semibold text-ink-900"><?= $count === null ? '—' : (int)$count ?></td>
                 </tr>
               <?php endforeach; ?>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <div class="backup-side-card">
-      <div class="backup-side-body">
-        <div class="backup-side-top">
-          <i class="ti ti-shield-lock"></i>
-          <div>
-            <h3>Boas práticas</h3>
-            <p>Antes de importar ou apagar dados, gere um backup completo. Em produção, valide o arquivo em uma base de teste primeiro.</p>
-          </div>
+      <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+          <h3 class="text-sm font-bold text-ink-950">Boas práticas</h3>
+        </div>
+        <div class="p-5">
+          <p class="text-xs leading-relaxed text-ink-600">
+            Antes de importar ou apagar dados, gere um backup completo. Em produção, valide o arquivo em uma base de teste primeiro.
+          </p>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="backup-actions mb-3">
-  <div class="backup-action-card">
-    <div class="backup-action-body">
-      <div class="backup-action-head">
-        <i class="ti ti-download"></i>
-        <h3>Backup completo</h3>
+  <div class="mt-5 grid gap-4 md:grid-cols-2">
+
+    <div class="card flex flex-col overflow-hidden">
+      <div class="flex-1 p-5">
+        <div class="mb-1 flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </span>
+          <h3 class="text-sm font-bold text-ink-950">Backup completo</h3>
+        </div>
+        <p class="mt-2 text-sm text-ink-500">Exporta estrutura e dados de todas as tabelas da base atual em um único arquivo SQL.</p>
       </div>
-      <p>Exporta estrutura e dados de todas as tabelas da base atual em um único arquivo SQL.</p>
-      <form method="post" class="mt-auto">
+      <form method="post" class="px-5 pb-5">
         <input type="hidden" name="csrf" value="<?= h($token) ?>">
         <input type="hidden" name="backup_action" value="full_export">
-        <button class="btn btn-primary" type="submit">
-          <i class="ti ti-database-export me-1"></i> Baixar backup SQL
+        <button class="btn-primary w-full" type="submit">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Baixar backup SQL
         </button>
       </form>
     </div>
-  </div>
 
-  <div class="backup-action-card">
-    <div class="backup-action-body">
-      <div class="backup-action-head">
-        <i class="ti ti-users-group"></i>
-        <h3>Clientes e fornecedores</h3>
+    <div class="card flex flex-col overflow-hidden">
+      <div class="flex-1 p-5">
+        <div class="mb-1 flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+          <h3 class="text-sm font-bold text-ink-950">Clientes e fornecedores</h3>
+        </div>
+        <p class="mt-2 text-sm text-ink-500">Gera um arquivo apenas com <code class="rounded bg-ink-100 px-1 py-0.5 font-mono text-[11px]">clients</code> e <code class="rounded bg-ink-100 px-1 py-0.5 font-mono text-[11px]">suppliers</code>, incluindo estrutura e dados.</p>
       </div>
-      <p>Gera um arquivo apenas com <code>clients</code> e <code>suppliers</code>, incluindo estrutura e dados.</p>
-      <form method="post" class="mt-auto">
+      <form method="post" class="px-5 pb-5">
         <input type="hidden" name="csrf" value="<?= h($token) ?>">
         <input type="hidden" name="backup_action" value="contacts_export">
-        <button class="btn btn-outline-primary" type="submit">
-          <i class="ti ti-address-book me-1"></i> Baixar cadastros
+        <button class="btn-ghost w-full" type="submit">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Baixar cadastros
         </button>
       </form>
     </div>
-  </div>
 
-  <div class="backup-action-card">
-    <div class="backup-action-body">
-      <div class="backup-action-head">
-        <i class="ti ti-schema"></i>
-        <h3>Estrutura sem dados</h3>
+    <div class="card flex flex-col overflow-hidden">
+      <div class="flex-1 p-5">
+        <div class="mb-1 flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </span>
+          <h3 class="text-sm font-bold text-ink-950">Estrutura sem dados</h3>
+        </div>
+        <p class="mt-2 text-sm text-ink-500">Exporta apenas a estrutura das tabelas. Útil para subir ambiente novo sem registros operacionais.</p>
       </div>
-      <p>Exporta apenas a estrutura das tabelas. Útil para subir ambiente novo sem registros operacionais.</p>
-      <form method="post" class="mt-auto">
+      <form method="post" class="px-5 pb-5">
         <input type="hidden" name="csrf" value="<?= h($token) ?>">
         <input type="hidden" name="backup_action" value="structure_export">
-        <button class="btn btn-outline-secondary" type="submit">
-          <i class="ti ti-file-code me-1"></i> Baixar estrutura
+        <button class="btn-ghost w-full" type="submit">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Baixar estrutura
         </button>
       </form>
     </div>
-  </div>
 
-  <div class="backup-action-card">
-    <div class="backup-action-body">
-      <div class="backup-action-head">
-        <i class="ti ti-search"></i>
-        <h3>Pré-visualizar arquivo</h3>
+    <div class="card flex flex-col overflow-hidden">
+      <div class="flex-1 p-5">
+        <div class="mb-1 flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <h3 class="text-sm font-bold text-ink-950">Pré-visualizar arquivo</h3>
+        </div>
+        <p class="mt-2 text-sm text-ink-500">Lê o arquivo <code class="rounded bg-ink-100 px-1 py-0.5 font-mono text-[11px]">.sql</code> sem importar nada e mostra tabelas, agency_id, roles e alertas de compatibilidade.</p>
       </div>
-      <p>Lê o arquivo <code>.sql</code> sem importar nada e mostra tabelas, agency_id, roles e alertas de compatibilidade.</p>
-      <form method="post" enctype="multipart/form-data" class="mt-auto">
+      <form method="post" enctype="multipart/form-data" class="px-5 pb-5">
         <input type="hidden" name="csrf" value="<?= h($token) ?>">
         <input type="hidden" name="backup_action" value="preview_backup">
         <div class="mb-3">
-          <label class="form-label">Arquivo SQL</label>
-          <input class="form-control" type="file" name="backup_file" accept=".sql" required>
+          <label class="label-field" for="preview_file">Arquivo SQL</label>
+          <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="preview_file" type="file" name="backup_file" accept=".sql" required>
         </div>
-        <button class="btn btn-outline-primary" type="submit">
-          <i class="ti ti-eye-search me-1"></i> Analisar arquivo
+        <button class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 hover:text-brand-800" type="submit">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          Analisar arquivo
         </button>
       </form>
     </div>
-  </div>
 
-  <div class="backup-action-card">
-    <div class="backup-action-body">
-      <div class="backup-action-head">
-        <i class="ti ti-upload"></i>
-        <h3>Importar backup</h3>
+    <div class="card flex flex-col overflow-hidden md:col-span-2">
+      <div class="flex-1 p-5">
+        <div class="mb-1 flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </span>
+          <h3 class="text-sm font-bold text-ink-950">Importar backup</h3>
+        </div>
+        <p class="mt-2 text-sm text-ink-500">Restaura um arquivo <code class="rounded bg-ink-100 px-1 py-0.5 font-mono text-[11px]">.sql</code> na base atual. Use apenas arquivos confiáveis e compatíveis com o sistema.</p>
       </div>
-      <p>Restaura um arquivo <code>.sql</code> na base atual. Use apenas arquivos confiáveis e compatíveis com o sistema.</p>
-      <form method="post" enctype="multipart/form-data" class="mt-auto">
-        <input type="hidden" name="csrf" value="<?= h($token) ?>">
-        <input type="hidden" name="backup_action" value="import_backup">
-        <div class="mb-3">
-          <label class="form-label">Arquivo SQL</label>
-          <input class="form-control" type="file" name="backup_file" accept=".sql" required>
-        </div>
-        <button class="btn btn-outline-success" type="submit" onclick="return confirm('Importar este backup na base atual?');">
-          <i class="ti ti-upload me-1"></i> Importar backup
-        </button>
-      </form>
+      <div class="grid gap-6 border-t border-ink-100 p-5 md:grid-cols-2">
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf" value="<?= h($token) ?>">
+          <input type="hidden" name="backup_action" value="import_backup">
+          <div class="mb-3">
+            <label class="label-field" for="import_file">Arquivo SQL</label>
+            <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="import_file" type="file" name="backup_file" accept=".sql" required>
+          </div>
+          <button class="btn-soft border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800" type="submit" onclick="return confirm('Importar este backup na base atual?');">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Importar backup
+          </button>
+        </form>
 
-      <hr class="my-3">
-
-      <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="csrf" value="<?= h($token) ?>">
-        <input type="hidden" name="backup_action" value="agency_import">
-        <div class="mb-3">
-          <label class="form-label">Importar para empresa</label>
-          <select class="form-select" name="target_agency_id" required>
-            <?php foreach ($agencies as $agency): ?>
-              <option value="<?= (int)$agency['id'] ?>"><?= h($agency['label']) ?> (#<?= (int)$agency['id'] ?>)</option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Arquivo SQL</label>
-          <input class="form-control" type="file" name="backup_file" accept=".sql" required>
-        </div>
-        <button class="btn btn-outline-primary" type="submit" onclick="return confirm('Importar os dados para a empresa selecionada com remapeamento de agency_id e IDs internos?');">
-          <i class="ti ti-git-fork me-1"></i> Importar para empresa
-        </button>
-      </form>
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf" value="<?= h($token) ?>">
+          <input type="hidden" name="backup_action" value="agency_import">
+          <div class="mb-3">
+            <label class="label-field" for="target_agency_id">Importar para empresa</label>
+            <select class="select-field" id="target_agency_id" name="target_agency_id" required>
+              <?php foreach ($agencies as $agency): ?>
+                <option value="<?= (int)$agency['id'] ?>"><?= h($agency['label']) ?> (#<?= (int)$agency['id'] ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="label-field" for="agency_import_file">Arquivo SQL</label>
+            <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="agency_import_file" type="file" name="backup_file" accept=".sql" required>
+          </div>
+          <button class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 hover:text-brand-800" type="submit" onclick="return confirm('Importar os dados para a empresa selecionada com remapeamento de agency_id e IDs internos?');">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="3"></circle><path d="M5 9v12"></path><circle cx="19" cy="6" r="3"></circle><path d="M19 9v4a2 2 0 0 1-2 2h-8"></path><path d="M9 15l-2-2 2-2"></path><path d="M15 17l2 2-2 2"></path></svg>
+            Importar para empresa
+          </button>
+        </form>
+      </div>
     </div>
+
   </div>
-</div>
 
-<?php if (is_array($preview)): ?>
-  <div class="backup-preview-card mb-3">
-    <div class="backup-panel-body">
-      <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
-        <div>
-          <div class="text-muted small text-uppercase fw-semibold mb-1">Pré-visualização</div>
-          <h3 class="card-title mb-1">Leitura do arquivo antes do import</h3>
-          <div class="text-muted">Nada foi importado. Esta leitura serve apenas para validar compatibilidade.</div>
-        </div>
+  <?php if (is_array($preview)): ?>
+    <div class="card mt-5 overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-ink-500">Pré-visualização</p>
+        <h3 class="mt-0.5 text-sm font-bold text-ink-950">Leitura do arquivo antes do import</h3>
+        <p class="mt-0.5 text-xs text-ink-500">Nada foi importado. Esta leitura serve apenas para validar compatibilidade.</p>
       </div>
+      <div class="p-5">
+        <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-3">
+            <p class="text-[11px] font-medium text-ink-500">Tabelas</p>
+            <p class="mt-0.5 text-sm font-bold text-ink-950"><?= (int)$preview['table_count'] ?></p>
+          </div>
+          <div class="rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-3">
+            <p class="text-[11px] font-medium text-ink-500">FOREIGN KEY</p>
+            <p class="mt-0.5 text-sm font-bold text-ink-950"><?= (int)$preview['foreign_key_count'] ?></p>
+          </div>
+          <div class="rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-3">
+            <p class="text-[11px] font-medium text-ink-500">agency_id encontrados</p>
+            <p class="mt-0.5 text-sm font-bold text-ink-950"><?= $preview['agency_ids'] ? h(implode(', ', $preview['agency_ids'])) : '—' ?></p>
+          </div>
+          <div class="rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-3">
+            <p class="text-[11px] font-medium text-ink-500">users.role</p>
+            <p class="mt-0.5 text-sm font-bold text-ink-950"><?= $preview['role_values'] ? h(implode(', ', $preview['role_values'])) : '—' ?></p>
+          </div>
+        </div>
 
-      <div class="backup-preview-grid mb-3">
-        <div class="backup-preview-stat">
-          <div class="backup-preview-stat-label">Tabelas</div>
-          <div class="backup-preview-stat-value"><?= (int)$preview['table_count'] ?></div>
-        </div>
-        <div class="backup-preview-stat">
-          <div class="backup-preview-stat-label">FOREIGN KEY</div>
-          <div class="backup-preview-stat-value"><?= (int)$preview['foreign_key_count'] ?></div>
-        </div>
-        <div class="backup-preview-stat">
-          <div class="backup-preview-stat-label">agency_id encontrados</div>
-          <div class="backup-preview-stat-value"><?= $preview['agency_ids'] ? h(implode(', ', $preview['agency_ids'])) : '—' ?></div>
-        </div>
-        <div class="backup-preview-stat">
-          <div class="backup-preview-stat-label">users.role</div>
-          <div class="backup-preview-stat-value"><?= $preview['role_values'] ? h(implode(', ', $preview['role_values'])) : '—' ?></div>
-        </div>
-      </div>
+        <?php if (!empty($preview['warnings'])): ?>
+          <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p class="mb-1 font-semibold">Alertas</p>
+            <ul class="list-disc space-y-0.5 pl-4">
+              <?php foreach ($preview['warnings'] as $warning): ?>
+                <li><?= h($warning) ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+        <?php else: ?>
+          <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            Nenhum alerta estrutural óbvio foi encontrado.
+          </div>
+        <?php endif; ?>
 
-      <?php if (!empty($preview['warnings'])): ?>
-        <div class="alert alert-warning">
-          <div class="fw-semibold mb-1">Alertas</div>
-          <ul class="mb-0 ps-3">
-            <?php foreach ($preview['warnings'] as $warning): ?>
-              <li><?= h($warning) ?></li>
-            <?php endforeach; ?>
-          </ul>
-        </div>
-      <?php else: ?>
-        <div class="alert alert-success">Nenhum alerta estrutural óbvio foi encontrado.</div>
-      <?php endif; ?>
+        <?php if (!empty($preview['agency_ids'])): ?>
+          <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+            Para <strong>Importar para empresa</strong>, o sistema ignora o <code class="rounded bg-sky-100 px-1 py-0.5 font-mono text-[11px]">agency_id</code> do arquivo e grava tudo na empresa escolhida.
+          </div>
+        <?php endif; ?>
 
-      <?php if (!empty($preview['agency_ids'])): ?>
-        <div class="alert alert-info">
-          Para <strong>Importar para empresa</strong>, o sistema ignora o <code>agency_id</code> do arquivo e grava tudo na empresa escolhida.
-        </div>
-      <?php endif; ?>
-
-      <div class="row g-3">
-        <div class="col-lg-6">
-          <div class="backup-side-card h-100">
-            <div class="backup-side-body">
-              <h3>Tabelas no arquivo</h3>
-              <div class="d-flex flex-wrap gap-1">
-                <?php foreach ($preview['tables'] as $table): ?>
-                  <code><?= h($table) ?></code>
+        <div class="mt-5 grid gap-4 lg:grid-cols-2">
+          <div class="rounded-xl border border-ink-100 p-4">
+            <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink-500">Tabelas no arquivo</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <?php foreach ($preview['tables'] as $table): ?>
+                <code class="rounded-md bg-ink-100 px-1.5 py-0.5 text-[11px] font-semibold text-ink-700"><?= h($table) ?></code>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <div class="rounded-xl border border-ink-100 p-4">
+            <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink-500">Linhas por tabela</h3>
+            <table class="table-modern">
+              <tbody>
+                <?php foreach ($preview['insert_counts'] as $table => $count): ?>
+                  <tr>
+                    <td><code class="rounded-md bg-ink-100 px-1.5 py-0.5 text-[11px] font-semibold text-ink-700"><?= h($table) ?></code></td>
+                    <td class="text-right font-semibold text-ink-900"><?= (int)$count ?></td>
+                  </tr>
                 <?php endforeach; ?>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="backup-side-card h-100">
-            <div class="backup-side-body">
-              <h3>Linhas por tabela</h3>
-              <div class="table-responsive">
-                <table class="table table-vcenter backup-counts-table mb-0">
-                  <tbody>
-                    <?php foreach ($preview['insert_counts'] as $table => $count): ?>
-                      <tr>
-                        <td><code><?= h($table) ?></code></td>
-                        <td class="text-end fw-semibold"><?= (int)$count ?></td>
-                      </tr>
-                    <?php endforeach; ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
-  </div>
-<?php endif; ?>
+  <?php endif; ?>
 
-<div class="backup-danger">
-  <div class="backup-danger-body">
-    <div class="backup-danger-top">
-      <i class="ti ti-alert-triangle" style="color:#dc2626"></i>
+  <div class="mt-5 rounded-2xl border border-red-200/70 bg-gradient-to-b from-white to-red-50/60 p-5 shadow-sm">
+    <div class="mb-4 flex items-start gap-2.5">
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
       <div>
-        <h3 class="backup-danger-title">Apagar dados</h3>
-        <div class="text-muted">Apague tudo ou apenas os grupos que fizerem sentido para esta limpeza.</div>
+        <h3 class="text-sm font-bold text-red-700">Apagar dados</h3>
+        <p class="text-xs text-ink-500">Apague tudo ou apenas os grupos que fizerem sentido para esta limpeza.</p>
       </div>
     </div>
 
-    <div class="alert alert-warning mb-3">
-      Se apagar <strong>usuários</strong> e <strong>empresas</strong>, o acesso volta quando a página de login recriar automaticamente o master e a empresa <code>id=1</code>.
+    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+      Se apagar <strong>usuários</strong> e <strong>empresas</strong>, o acesso volta quando a página de login recriar automaticamente o master e a empresa <code class="rounded bg-amber-100 px-1 py-0.5 font-mono">id=1</code>.
     </div>
 
     <form method="post" id="purgeOperationalDataForm">
       <input type="hidden" name="csrf" value="<?= h($token) ?>">
       <input type="hidden" name="backup_action" value="purge_operational_data">
 
-      <div class="backup-purge-options mb-3">
-        <label class="backup-purge-mode">
-          <input class="form-check-input me-2" type="radio" name="purge_mode" value="operational" checked>
-          <strong>Somente operacional</strong>
-          <div class="text-muted small mt-1">Vendas, viagens, passageiros, segmentos, reembolsos, serviços, contadores e logs.</div>
+      <div class="mb-4 space-y-2.5">
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3">
+          <input class="mt-0.5 h-4 w-4 accent-brand-600" type="radio" name="purge_mode" value="operational" checked>
+          <span>
+            <span class="block text-sm font-bold text-ink-900">Somente operacional</span>
+            <span class="mt-0.5 block text-xs text-ink-500">Vendas, viagens, passageiros, segmentos, reembolsos, serviços, contadores e logs.</span>
+          </span>
         </label>
 
-        <label class="backup-purge-mode">
-          <input class="form-check-input me-2" type="radio" name="purge_mode" value="all">
-          <strong>Apagar tudo</strong>
-          <div class="text-muted small mt-1">Empresas, usuários, clientes, fornecedores e todo o conteúdo operacional.</div>
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3">
+          <input class="mt-0.5 h-4 w-4 accent-brand-600" type="radio" name="purge_mode" value="all">
+          <span>
+            <span class="block text-sm font-bold text-ink-900">Apagar tudo</span>
+            <span class="mt-0.5 block text-xs text-ink-500">Empresas, usuários, clientes, fornecedores e todo o conteúdo operacional.</span>
+          </span>
         </label>
 
-        <div class="backup-purge-mode">
-          <label class="d-flex align-items-center mb-2">
-            <input class="form-check-input me-2" type="radio" name="purge_mode" value="custom">
-            <strong>Escolher seções</strong>
+        <div class="rounded-xl border border-ink-100 bg-white px-4 py-3">
+          <label class="flex cursor-pointer items-center gap-3">
+            <input class="h-4 w-4 accent-brand-600" type="radio" name="purge_mode" value="custom">
+            <span class="text-sm font-bold text-ink-900">Escolher seções</span>
           </label>
-          <div class="backup-purge-grid">
-            <label class="form-check mb-0">
-              <input class="form-check-input purge-section" type="checkbox" name="purge_sections[]" value="operational">
-              <span class="form-check-label">Operacional</span>
+          <div class="mt-3 grid gap-1.5 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input class="purge-section h-4 w-4 accent-brand-600" type="checkbox" name="purge_sections[]" value="operational">
+              <span class="text-sm text-ink-700">Operacional</span>
             </label>
-            <label class="form-check mb-0">
-              <input class="form-check-input purge-section" type="checkbox" name="purge_sections[]" value="clients">
-              <span class="form-check-label">Clientes</span>
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input class="purge-section h-4 w-4 accent-brand-600" type="checkbox" name="purge_sections[]" value="clients">
+              <span class="text-sm text-ink-700">Clientes</span>
             </label>
-            <label class="form-check mb-0">
-              <input class="form-check-input purge-section" type="checkbox" name="purge_sections[]" value="suppliers">
-              <span class="form-check-label">Fornecedores</span>
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input class="purge-section h-4 w-4 accent-brand-600" type="checkbox" name="purge_sections[]" value="suppliers">
+              <span class="text-sm text-ink-700">Fornecedores</span>
             </label>
-            <label class="form-check mb-0">
-              <input class="form-check-input purge-section" type="checkbox" name="purge_sections[]" value="users">
-              <span class="form-check-label">Usuários</span>
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input class="purge-section h-4 w-4 accent-brand-600" type="checkbox" name="purge_sections[]" value="users">
+              <span class="text-sm text-ink-700">Usuários</span>
             </label>
-            <label class="form-check mb-0">
-              <input class="form-check-input purge-section" type="checkbox" name="purge_sections[]" value="agencies">
-              <span class="form-check-label">Empresas</span>
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input class="purge-section h-4 w-4 accent-brand-600" type="checkbox" name="purge_sections[]" value="agencies">
+              <span class="text-sm text-ink-700">Empresas</span>
             </label>
           </div>
         </div>
       </div>
 
-      <div class="form-check mb-2">
-        <input class="form-check-input" type="checkbox" name="warn_backup" id="warnBackup" value="1">
-        <label class="form-check-label" for="warnBackup">Entendo que devo gerar um backup antes de continuar.</label>
-      </div>
+      <label class="mb-4 flex cursor-pointer items-center gap-2.5">
+        <input class="h-4 w-4 accent-brand-600" type="checkbox" name="warn_backup" id="warnBackup" value="1">
+        <span class="text-sm text-ink-700">Entendo que devo gerar um backup antes de continuar.</span>
+      </label>
 
-      <button class="btn btn-outline-danger" type="submit" id="purgeSubmitBtn" disabled>
-        <i class="ti ti-alert-triangle me-1"></i> Apagar dados selecionados
+      <button class="btn-soft border-red-300 bg-white text-red-700 hover:bg-red-50 hover:text-red-800" type="submit" id="purgeSubmitBtn" disabled>
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Apagar dados selecionados
       </button>
     </form>
   </div>
+
 </div>
 
 <script>
@@ -1609,5 +1417,6 @@ document.addEventListener('DOMContentLoaded', function () {
   syncPurgeButton();
 });
 </script>
-
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

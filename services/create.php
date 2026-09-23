@@ -446,322 +446,327 @@ $suppliers = $suppliersStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $token = csrf_token();
 $pageTitle = 'Nova Venda de Serviço';
-require __DIR__ . '/../inc/header.php';
+ob_start();
+$tblInp = 'w-full rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-sm text-ink-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/10';
+$tblSel = 'w-full rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-sm text-ink-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/10';
 ?>
-
-<style>
-.table-wrap { overflow:auto; -webkit-overflow-scrolling:touch; }
-.table-wrap .table { min-width: 820px; }
-.is-invalid { background: #fff1f2 !important; border-color: #dc3545 !important; }
-</style>
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
-<form method="post" id="serviceForm" autocomplete="off">
+<div class="mx-auto max-w-5xl">
+
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Serviços</p>
+      <h2 class="text-xl font-bold text-ink-950">Nova Venda de Serviço</h2>
+      <p class="mt-1 text-sm text-ink-500">Hotel, carro, seguro ou serviço avulso — com passageiros e quartos.</p>
+    </div>
+    <a href="/services/index.php" class="btn-ghost">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+      Cancelar
+    </a>
+  </div>
+
   <?php if ($err): ?>
-    <div class="alert alert-danger"><?= e($err) ?></div>
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+      <?= e($err) ?>
+    </div>
   <?php endif; ?>
 
-  <div class="card">
-    <div class="card-header"><h3 class="card-title">Dados da Venda</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label">Tipo de venda *</label>
-          <select class="form-select" id="serviceType" name="service_type" required>
-            <?php foreach ($serviceTypes as $value => $label): ?>
-              <option value="<?= e($value) ?>" <?= $old['service_type'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
+  <form method="post" id="serviceForm" autocomplete="off" class="space-y-5">
 
-        <div class="col-md-4">
-          <label class="form-label">Cliente *</label>
-          <select class="form-select" id="clientSelect" name="client_id" required>
-            <option value="">— selecione —</option>
-            <?php foreach ($clients as $c): ?>
-              <option value="<?= (int)$c['id'] ?>" <?= ((string)$c['id'] === (string)$old['client_id']) ? 'selected' : '' ?>>
-                <?= e($c['name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label">Fornecedor</label>
-          <select class="form-select" id="supplierSelect" name="supplier_id">
-            <option value="">— nenhum —</option>
-            <?php foreach ($suppliers as $s): ?>
-              <option value="<?= (int)$s['id'] ?>" <?= ((string)$s['id'] === (string)$old['supplier_id']) ? 'selected' : '' ?>>
-                <?= e($s['name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label">Referência</label>
-          <input type="text" class="form-control" name="reference" value="<?= e($old['reference']) ?>" placeholder="Código interno / localizador">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Status</label>
-          <select class="form-select" name="status">
-            <option value="pending"   <?= $old['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
-            <option value="confirmed" <?= $old['status'] === 'confirmed' ? 'selected' : '' ?>>Confirmed</option>
-            <option value="cancelled" <?= $old['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-            <option value="refunded"  <?= $old['status'] === 'refunded' ? 'selected' : '' ?>>Refunded</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Moeda</label>
-          <select class="form-select" name="currency">
-            <option value="BRL" <?= $old['currency'] === 'BRL' ? 'selected' : '' ?>>BRL</option>
-            <option value="USD" <?= $old['currency'] === 'USD' ? 'selected' : '' ?>>USD</option>
-            <option value="EUR" <?= $old['currency'] === 'EUR' ? 'selected' : '' ?>>EUR</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Valor Total</label>
-          <input class="form-control" name="total_amount" id="total_amount" value="<?= e($old['total_amount']) ?>" placeholder="0,00">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Custo</label>
-          <input class="form-control" name="cost_amount" id="cost_amount" value="<?= e($old['cost_amount']) ?>" placeholder="0,00">
-        </div>
-
-        <div class="col-md-12">
-          <label class="form-label">Observações</label>
-          <textarea class="form-control" name="notes" rows="3"><?= e($old['notes']) ?></textarea>
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados da Venda</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label class="label-field" for="serviceType">Tipo de venda *</label>
+            <select class="select-field" id="serviceType" name="service_type" required>
+              <?php foreach ($serviceTypes as $value => $label): ?>
+                <option value="<?= e($value) ?>" <?= $old['service_type'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div>
+            <label class="label-field" for="clientSelect">Cliente *</label>
+            <select class="select-field" id="clientSelect" name="client_id" required>
+              <option value="">— selecione —</option>
+              <?php foreach ($clients as $c): ?>
+                <option value="<?= (int)$c['id'] ?>" <?= ((string)$c['id'] === (string)$old['client_id']) ? 'selected' : '' ?>>
+                  <?= e($c['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div>
+            <label class="label-field" for="supplierSelect">Fornecedor</label>
+            <select class="select-field" id="supplierSelect" name="supplier_id">
+              <option value="">— nenhum —</option>
+              <?php foreach ($suppliers as $s): ?>
+                <option value="<?= (int)$s['id'] ?>" <?= ((string)$s['id'] === (string)$old['supplier_id']) ? 'selected' : '' ?>>
+                  <?= e($s['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div>
+            <label class="label-field" for="reference">Referência</label>
+            <input type="text" class="input-field" id="reference" name="reference" value="<?= e($old['reference']) ?>" placeholder="Código interno / localizador">
+          </div>
+          <div>
+            <label class="label-field" for="status">Status</label>
+            <select class="select-field" id="status" name="status">
+              <option value="pending"   <?= $old['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+              <option value="confirmed" <?= $old['status'] === 'confirmed' ? 'selected' : '' ?>>Confirmed</option>
+              <option value="cancelled" <?= $old['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+              <option value="refunded"  <?= $old['status'] === 'refunded' ? 'selected' : '' ?>>Refunded</option>
+            </select>
+          </div>
+          <div>
+            <label class="label-field" for="currency">Moeda</label>
+            <select class="select-field" id="currency" name="currency">
+              <option value="BRL" <?= $old['currency'] === 'BRL' ? 'selected' : '' ?>>BRL</option>
+              <option value="USD" <?= $old['currency'] === 'USD' ? 'selected' : '' ?>>USD</option>
+              <option value="EUR" <?= $old['currency'] === 'EUR' ? 'selected' : '' ?>>EUR</option>
+            </select>
+          </div>
+          <div>
+            <label class="label-field" for="total_amount">Valor Total</label>
+            <input class="input-field" id="total_amount" name="total_amount" value="<?= e($old['total_amount']) ?>" placeholder="0,00">
+          </div>
+          <div>
+            <label class="label-field" for="cost_amount">Custo</label>
+            <input class="input-field" id="cost_amount" name="cost_amount" value="<?= e($old['cost_amount']) ?>" placeholder="0,00">
+          </div>
+          <div class="sm:col-span-2 lg:col-span-3">
+            <label class="label-field" for="notes">Observações</label>
+            <textarea class="input-field" id="notes" name="notes" rows="3"><?= e($old['notes']) ?></textarea>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card service-panel" data-service-panel="hotel">
-    <div class="card-header"><h3 class="card-title">Dados do Hotel</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Hotel Name *</label>
-          <input type="text" class="form-control" name="hotel_name" value="<?= e($old['hotel_name']) ?>" required>
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Stars</label>
-          <input type="number" class="form-control" name="stars" min="0" max="7" value="<?= e($old['stars']) ?>">
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Check-in *</label>
-          <input type="date" class="form-control" name="checkin" value="<?= e($old['checkin']) ?>" required>
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Check-out *</label>
-          <input type="date" class="form-control" name="checkout" value="<?= e($old['checkout']) ?>" required>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Nights</label>
-          <input type="number" class="form-control" name="nights" id="nights" value="<?= e($old['nights']) ?>" min="0">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Rooms</label>
-          <input type="number" class="form-control" name="rooms" value="<?= e($old['rooms']) ?>" min="0">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Main Room Type</label>
-          <input type="text" class="form-control" name="room_type" value="<?= e($old['room_type']) ?>" placeholder="Luxury Room - 1 King Bed">
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Meal Plan</label>
-          <input type="text" class="form-control" name="meal" value="<?= e($old['meal']) ?>" placeholder="Breakfast Included">
-        </div>
-
-        <div class="col-md-12">
-          <label class="form-label">Hotel Address</label>
-          <textarea class="form-control" name="hotel_address" rows="3"><?= e($old['hotel_address']) ?></textarea>
-        </div>
-
-        <div class="col-md-12">
-          <label class="form-label">Image URL</label>
-          <input type="text" class="form-control" name="image" value="<?= e($old['image']) ?>" placeholder="https://...">
-        </div>
-
-        <div class="col-md-12">
-          <label class="form-label">Cancellation Policy</label>
-          <textarea class="form-control" name="cancel_policy" rows="4"><?= e($old['cancel_policy']) ?></textarea>
+    <div class="card service-panel overflow-hidden" data-service-panel="hotel">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados do Hotel</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <label class="label-field" for="hotel_name">Hotel Name *</label>
+            <input type="text" class="input-field" id="hotel_name" name="hotel_name" value="<?= e($old['hotel_name']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field" for="stars">Stars</label>
+            <input type="number" class="input-field" id="stars" name="stars" min="0" max="7" value="<?= e($old['stars']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="checkin">Check-in *</label>
+            <input type="date" class="input-field" id="checkin" name="checkin" value="<?= e($old['checkin']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field" for="checkout">Check-out *</label>
+            <input type="date" class="input-field" id="checkout" name="checkout" value="<?= e($old['checkout']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field" for="nights">Nights</label>
+            <input type="number" class="input-field" id="nights" name="nights" value="<?= e($old['nights']) ?>" min="0">
+          </div>
+          <div>
+            <label class="label-field" for="rooms">Rooms</label>
+            <input type="number" class="input-field" id="rooms" name="rooms" value="<?= e($old['rooms']) ?>" min="0">
+          </div>
+          <div>
+            <label class="label-field" for="room_type">Main Room Type</label>
+            <input type="text" class="input-field" id="room_type" name="room_type" value="<?= e($old['room_type']) ?>" placeholder="Luxury Room - 1 King Bed">
+          </div>
+          <div>
+            <label class="label-field" for="meal">Meal Plan</label>
+            <input type="text" class="input-field" id="meal" name="meal" value="<?= e($old['meal']) ?>" placeholder="Breakfast Included">
+          </div>
+          <div class="sm:col-span-2 lg:col-span-2">
+            <label class="label-field" for="hotel_address">Hotel Address</label>
+            <textarea class="input-field" id="hotel_address" name="hotel_address" rows="3"><?= e($old['hotel_address']) ?></textarea>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-2">
+            <label class="label-field" for="image">Image URL</label>
+            <input type="text" class="input-field" id="image" name="image" value="<?= e($old['image']) ?>" placeholder="https://...">
+          </div>
+          <div class="sm:col-span-2 lg:col-span-4">
+            <label class="label-field" for="cancel_policy">Cancellation Policy</label>
+            <textarea class="input-field" id="cancel_policy" name="cancel_policy" rows="4"><?= e($old['cancel_policy']) ?></textarea>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card service-panel" data-service-panel="car">
-    <div class="card-header"><h3 class="card-title">Dados do Aluguel de Carro</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Locadora *</label>
-          <input type="text" class="form-control" name="car_company_name" value="<?= e($old['car_company_name']) ?>" data-required-for="car">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Tipo / Categoria do carro</label>
-          <input type="text" class="form-control" name="car_type" value="<?= e($old['car_type']) ?>" placeholder="SUV, Econômico, Executivo...">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Retirada</label>
-          <input type="date" class="form-control" name="pickup_date" value="<?= e($old['pickup_date']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Devolução</label>
-          <input type="date" class="form-control" name="return_date" value="<?= e($old['return_date']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Local de retirada</label>
-          <input type="text" class="form-control" name="pickup_location" value="<?= e($old['pickup_location']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Local de devolução</label>
-          <input type="text" class="form-control" name="return_location" value="<?= e($old['return_location']) ?>">
-        </div>
-        <div class="col-md-12">
-          <label class="form-label">Condutor / Observações</label>
-          <textarea class="form-control" name="driver_name" rows="3"><?= e($old['driver_name']) ?></textarea>
+    <div class="card service-panel overflow-hidden" data-service-panel="car">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados do Aluguel de Carro</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <label class="label-field" for="car_company_name">Locadora *</label>
+            <input type="text" class="input-field" id="car_company_name" name="car_company_name" value="<?= e($old['car_company_name']) ?>" data-required-for="car">
+          </div>
+          <div class="lg:col-span-2">
+            <label class="label-field" for="car_type">Tipo / Categoria do carro</label>
+            <input type="text" class="input-field" id="car_type" name="car_type" value="<?= e($old['car_type']) ?>" placeholder="SUV, Econômico, Executivo...">
+          </div>
+          <div>
+            <label class="label-field" for="pickup_date">Retirada</label>
+            <input type="date" class="input-field" id="pickup_date" name="pickup_date" value="<?= e($old['pickup_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="return_date">Devolução</label>
+            <input type="date" class="input-field" id="return_date" name="return_date" value="<?= e($old['return_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="pickup_location">Local de retirada</label>
+            <input type="text" class="input-field" id="pickup_location" name="pickup_location" value="<?= e($old['pickup_location']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="return_location">Local de devolução</label>
+            <input type="text" class="input-field" id="return_location" name="return_location" value="<?= e($old['return_location']) ?>">
+          </div>
+          <div class="sm:col-span-2 lg:col-span-4">
+            <label class="label-field" for="driver_name">Condutor / Observações</label>
+            <textarea class="input-field" id="driver_name" name="driver_name" rows="3"><?= e($old['driver_name']) ?></textarea>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card service-panel" data-service-panel="insurance">
-    <div class="card-header"><h3 class="card-title">Dados do Seguro Saúde</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Seguradora *</label>
-          <input type="text" class="form-control" name="insurance_provider_name" value="<?= e($old['insurance_provider_name']) ?>" data-required-for="insurance">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Plano</label>
-          <input type="text" class="form-control" name="insurance_plan_name" value="<?= e($old['insurance_plan_name']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Início da cobertura</label>
-          <input type="date" class="form-control" name="insurance_start_date" value="<?= e($old['insurance_start_date']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Fim da cobertura</label>
-          <input type="date" class="form-control" name="insurance_end_date" value="<?= e($old['insurance_end_date']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Cobertura</label>
-          <input type="text" class="form-control" name="insurance_coverage_amount" value="<?= e($old['insurance_coverage_amount']) ?>" placeholder="USD 60.000">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Destino</label>
-          <input type="text" class="form-control" name="insurance_destination" value="<?= e($old['insurance_destination']) ?>">
+    <div class="card service-panel overflow-hidden" data-service-panel="insurance">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados do Seguro Saúde</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <label class="label-field" for="insurance_provider_name">Seguradora *</label>
+            <input type="text" class="input-field" id="insurance_provider_name" name="insurance_provider_name" value="<?= e($old['insurance_provider_name']) ?>" data-required-for="insurance">
+          </div>
+          <div class="lg:col-span-2">
+            <label class="label-field" for="insurance_plan_name">Plano</label>
+            <input type="text" class="input-field" id="insurance_plan_name" name="insurance_plan_name" value="<?= e($old['insurance_plan_name']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="insurance_start_date">Início da cobertura</label>
+            <input type="date" class="input-field" id="insurance_start_date" name="insurance_start_date" value="<?= e($old['insurance_start_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="insurance_end_date">Fim da cobertura</label>
+            <input type="date" class="input-field" id="insurance_end_date" name="insurance_end_date" value="<?= e($old['insurance_end_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="insurance_coverage_amount">Cobertura</label>
+            <input type="text" class="input-field" id="insurance_coverage_amount" name="insurance_coverage_amount" value="<?= e($old['insurance_coverage_amount']) ?>" placeholder="USD 60.000">
+          </div>
+          <div>
+            <label class="label-field" for="insurance_destination">Destino</label>
+            <input type="text" class="input-field" id="insurance_destination" name="insurance_destination" value="<?= e($old['insurance_destination']) ?>">
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card service-panel" data-service-panel="reception guide transfer other">
-    <div class="card-header"><h3 class="card-title">Dados do Serviço</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Nome do serviço *</label>
-          <input type="text" class="form-control" name="generic_title" value="<?= e($old['generic_title']) ?>" placeholder="Recepção, guia turístico, transfer..." data-required-for="reception guide transfer other">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Data inicial</label>
-          <input type="date" class="form-control" name="generic_start_date" value="<?= e($old['generic_start_date']) ?>">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Data final</label>
-          <input type="date" class="form-control" name="generic_end_date" value="<?= e($old['generic_end_date']) ?>">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Local</label>
-          <input type="text" class="form-control" name="generic_location" value="<?= e($old['generic_location']) ?>">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Participantes</label>
-          <input type="text" class="form-control" name="generic_participants" value="<?= e($old['generic_participants']) ?>">
-        </div>
-        <div class="col-md-12">
-          <label class="form-label">Detalhes</label>
-          <textarea class="form-control" name="generic_details" rows="4"><?= e($old['generic_details']) ?></textarea>
+    <div class="card service-panel overflow-hidden" data-service-panel="reception guide transfer other">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados do Serviço</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <label class="label-field" for="generic_title">Nome do serviço *</label>
+            <input type="text" class="input-field" id="generic_title" name="generic_title" value="<?= e($old['generic_title']) ?>" placeholder="Recepção, guia turístico, transfer..." data-required-for="reception guide transfer other">
+          </div>
+          <div>
+            <label class="label-field" for="generic_start_date">Data inicial</label>
+            <input type="date" class="input-field" id="generic_start_date" name="generic_start_date" value="<?= e($old['generic_start_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="generic_end_date">Data final</label>
+            <input type="date" class="input-field" id="generic_end_date" name="generic_end_date" value="<?= e($old['generic_end_date']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="generic_location">Local</label>
+            <input type="text" class="input-field" id="generic_location" name="generic_location" value="<?= e($old['generic_location']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="generic_participants">Participantes</label>
+            <input type="text" class="input-field" id="generic_participants" name="generic_participants" value="<?= e($old['generic_participants']) ?>">
+          </div>
+          <div class="sm:col-span-2 lg:col-span-4">
+            <label class="label-field" for="generic_details">Detalhes</label>
+            <textarea class="input-field" id="generic_details" name="generic_details" rows="4"><?= e($old['generic_details']) ?></textarea>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card people-panel">
-    <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Pessoas / Passageiros</h3>
-      <div class="ms-auto btn-list">
-        <button type="button" id="addGuest" class="btn btn-outline-primary">
-          <i class="ti ti-plus"></i> Adicionar
+    <div class="card people-panel overflow-hidden">
+      <div class="flex items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Pessoas / Passageiros</h3>
+        <button type="button" id="addGuest" class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 hover:text-brand-800">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Adicionar
         </button>
       </div>
-    </div>
-    <div class="card-body table-wrap">
-      <table class="table" id="guestsTable">
-        <thead>
-          <tr>
-          <th>Nome</th>
-            <th style="width:200px">Tipo</th>
-            <th style="width:110px"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card service-panel" data-service-panel="hotel">
-    <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Quartos</h3>
-      <div class="ms-auto btn-list">
-        <button type="button" id="addRoom" class="btn btn-outline-primary">
-          <i class="ti ti-plus"></i> Adicionar
-        </button>
+      <div class="overflow-x-auto p-5">
+        <table class="table-modern" id="guestsTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th style="width:200px">Tipo</th>
+              <th style="width:110px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
-    <div class="card-body table-wrap">
-      <table class="table" id="roomsTable">
-        <thead>
-          <tr>
-            <th>Room Type</th>
-            <th>Guests</th>
-            <th>Meal</th>
-            <th>Beds</th>
-            <th style="width:120px">Qty</th>
-            <th style="width:110px"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+
+    <div class="card service-panel overflow-hidden" data-service-panel="hotel">
+      <div class="flex items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Quartos</h3>
+        <button type="button" id="addRoom" class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 hover:text-brand-800">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Adicionar
+        </button>
+      </div>
+      <div class="overflow-x-auto p-5">
+        <table class="table-modern" id="roomsTable">
+          <thead>
+            <tr>
+              <th>Room Type</th>
+              <th>Guests</th>
+              <th>Meal</th>
+              <th>Beds</th>
+              <th style="width:120px">Qty</th>
+              <th style="width:110px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <input type="hidden" name="csrf" value="<?= e($token) ?>">
+    <input type="hidden" name="csrf" value="<?= e($token) ?>">
 
-  <div class="d-flex justify-content-end mb-4 gap-2">
-    <a href="/services/index.php" class="btn">Cancelar</a>
-    <button class="btn btn-primary" type="submit" id="btnSave">
-      <i class="ti ti-device-floppy me-1"></i> Salvar
-    </button>
-  </div>
-</form>
+    <div class="flex items-center justify-end gap-3">
+      <a href="/services/index.php" class="btn-ghost">Cancelar</a>
+      <button class="btn-primary" type="submit" id="btnSave">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar
+      </button>
+    </div>
+  </form>
+
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -838,18 +843,19 @@ document.addEventListener('DOMContentLoaded', function(){
     data = data || { name:'', type:'Adult' };
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input name="guest_name[]" class="form-control" placeholder="FULL NAME" value="${(data.name || '').replace(/"/g,'&quot;')}"></td>
+      <td><input name="guest_name[]" class="<?= $tblInp ?>" placeholder="FULL NAME" value="${(data.name || '').replace(/"/g,'&quot;')}"></td>
       <td>
-        <select name="guest_type[]" class="form-select">
+        <select name="guest_type[]" class="<?= $tblSel ?>">
           <option value="Adult" ${data.type === 'Adult' ? 'selected' : ''}>Adult</option>
           <option value="Child" ${data.type === 'Child' ? 'selected' : ''}>Child</option>
           <option value="Infant" ${data.type === 'Infant' ? 'selected' : ''}>Infant</option>
         </select>
       </td>
-      <td class="text-end">
-        <div class="btn-list justify-content-end">
-          <button type="button" class="btn btn-outline-danger delRow"><i class="ti ti-trash"></i> Remover</button>
-        </div>
+      <td class="text-right">
+        <button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 delRow">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Remover
+        </button>
       </td>
     `;
     guestsBody.appendChild(tr);
@@ -867,15 +873,16 @@ document.addEventListener('DOMContentLoaded', function(){
     data = data || { room_type:'', guests:'', meal:'', beds:'', qty:'1' };
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input name="room_list_type[]" class="form-control" placeholder="Room Type" value="${(data.room_type || '').replace(/"/g,'&quot;')}"></td>
-      <td><input name="room_list_guests[]" class="form-control" placeholder="2 Adults" value="${(data.guests || '').replace(/"/g,'&quot;')}"></td>
-      <td><input name="room_list_meal[]" class="form-control" placeholder="Breakfast Included" value="${(data.meal || '').replace(/"/g,'&quot;')}"></td>
-      <td><input name="room_list_beds[]" class="form-control" placeholder="1 King Bed" value="${(data.beds || '').replace(/"/g,'&quot;')}"></td>
-      <td><input name="room_list_qty[]" class="form-control" type="number" min="1" value="${(data.qty || '1').toString().replace(/"/g,'&quot;')}"></td>
-      <td class="text-end">
-        <div class="btn-list justify-content-end">
-          <button type="button" class="btn btn-outline-danger delRow"><i class="ti ti-trash"></i> Remover</button>
-        </div>
+      <td><input name="room_list_type[]" class="<?= $tblInp ?>" placeholder="Room Type" value="${(data.room_type || '').replace(/"/g,'&quot;')}"></td>
+      <td><input name="room_list_guests[]" class="<?= $tblInp ?>" placeholder="2 Adults" value="${(data.guests || '').replace(/"/g,'&quot;')}"></td>
+      <td><input name="room_list_meal[]" class="<?= $tblInp ?>" placeholder="Breakfast Included" value="${(data.meal || '').replace(/"/g,'&quot;')}"></td>
+      <td><input name="room_list_beds[]" class="<?= $tblInp ?>" placeholder="1 King Bed" value="${(data.beds || '').replace(/"/g,'&quot;')}"></td>
+      <td><input name="room_list_qty[]" class="<?= $tblInp ?>" type="number" min="1" value="${(data.qty || '1').toString().replace(/"/g,'&quot;')}"></td>
+      <td class="text-right">
+        <button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 delRow">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Remover
+        </button>
       </td>
     `;
     roomsBody.appendChild(tr);
@@ -948,5 +955,6 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 </script>
-
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

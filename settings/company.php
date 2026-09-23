@@ -130,108 +130,152 @@ $companyValues = [
 
 $token = csrf_token();
 $pageTitle = 'Dados da Empresa';
-require_once __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-4xl">
 
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Dados da Empresa</h2>
-      <div class="text-muted small">Campos preenchidos pela base atual. Edite e salve para gravar na tabela da empresa.</div>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Configurações</p>
+      <h2 class="text-xl font-bold text-ink-950">Dados da Empresa</h2>
+      <p class="mt-1 text-sm text-ink-500">Campos preenchidos pela base atual. Edite e salve para gravar na tabela da empresa.</p>
     </div>
-    <div class="col-auto ms-auto">
-      <a href="/settings/index.php" class="btn">
-        <i class="ti ti-arrow-left me-1"></i> Voltar
+    <div class="flex items-center gap-2">
+      <a href="/settings/index.php" class="btn-ghost">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+        Voltar
       </a>
-      <button class="btn btn-primary" form="companyForm">
-        <i class="ti ti-device-floppy me-1"></i> Salvar
+      <button class="btn-primary" form="companyForm">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar
       </button>
     </div>
   </div>
+
+  <?php if ($msg === 'saved'): ?>
+    <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="alert">
+      Dados da empresa salvos com sucesso.
+    </div>
+  <?php endif; ?>
+  <?php if ($err !== ''): ?>
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+      <?= h($err) ?>
+    </div>
+  <?php endif; ?>
+
+  <form method="post" enctype="multipart/form-data" id="companyForm" autocomplete="off" class="space-y-5">
+    <input type="hidden" name="csrf" value="<?= h($token) ?>">
+
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados da Agência</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label class="label-field" for="cnpj">CNPJ</label>
+            <input class="input-field" id="cnpj" name="cnpj" value="<?= h($companyValues['cnpj']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="legal_name">Razão Social</label>
+            <input class="input-field" id="legal_name" name="legal_name" value="<?= h($companyValues['legal_name']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="fantasy_name">Nome Fantasia</label>
+            <input class="input-field" id="fantasy_name" name="fantasy_name" value="<?= h($companyValues['fantasy_name']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="email">Email</label>
+            <input class="input-field" id="email" type="email" name="email" value="<?= h($companyValues['email']) ?>">
+          </div>
+          <div>
+            <label class="label-field" for="phone">Fone</label>
+            <input class="input-field" id="phone" name="phone" value="<?= h($companyValues['phone']) ?>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Endereço Comercial</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          <div class="lg:col-span-1">
+            <label class="label-field" for="cep">CEP</label>
+            <input class="input-field" id="cep" name="cep" value="<?= h($companyValues['cep']) ?>">
+          </div>
+          <div class="lg:col-span-3">
+            <label class="label-field" for="street">Logradouro</label>
+            <input class="input-field" id="street" name="street" value="<?= h($companyValues['street']) ?>">
+          </div>
+          <div class="lg:col-span-1">
+            <label class="label-field" for="number">Número</label>
+            <input class="input-field" id="number" name="number" value="<?= h($companyValues['number']) ?>">
+          </div>
+          <div class="lg:col-span-1">
+            <label class="label-field" for="uf">UF</label>
+            <input class="input-field" id="uf" name="uf" maxlength="2" value="<?= h($companyValues['uf']) ?>">
+          </div>
+          <div class="lg:col-span-2">
+            <label class="label-field" for="district">Bairro</label>
+            <input class="input-field" id="district" name="district" value="<?= h($companyValues['district']) ?>">
+          </div>
+          <div class="lg:col-span-2">
+            <label class="label-field" for="complement">Complemento</label>
+            <input class="input-field" id="complement" name="complement" value="<?= h($companyValues['complement']) ?>">
+          </div>
+          <div class="lg:col-span-2">
+            <label class="label-field" for="city">Cidade</label>
+            <input class="input-field" id="city" name="city" value="<?= h($companyValues['city']) ?>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Dados Bancários</h3>
+      </div>
+      <div class="p-5">
+        <textarea class="input-field" name="bank_details" rows="5"><?= h($companyValues['bank_details']) ?></textarea>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Arquivos</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label class="label-field" for="logo">Logo</label>
+            <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="logo" type="file" name="logo" accept="image/*">
+            <?php if ($companyValues['logo_path'] !== ''): ?>
+              <p class="mt-1.5 truncate text-xs text-ink-500" title="<?= h($companyValues['logo_path']) ?>"><?= h($companyValues['logo_path']) ?></p>
+            <?php endif; ?>
+          </div>
+          <div>
+            <label class="label-field" for="stamp">Carimbo</label>
+            <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="stamp" type="file" name="stamp" accept="image/*">
+            <?php if ($companyValues['stamp_path'] !== ''): ?>
+              <p class="mt-1.5 truncate text-xs text-ink-500" title="<?= h($companyValues['stamp_path']) ?>"><?= h($companyValues['stamp_path']) ?></p>
+            <?php endif; ?>
+          </div>
+          <div>
+            <label class="label-field" for="favicon">Favicon</label>
+            <input class="input-field file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700" id="favicon" type="file" name="favicon" accept="image/*,.ico">
+            <?php if ($companyValues['favicon_path'] !== ''): ?>
+              <p class="mt-1.5 truncate text-xs text-ink-500" title="<?= h($companyValues['favicon_path']) ?>"><?= h($companyValues['favicon_path']) ?></p>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
 </div>
-
-<?php if ($msg === 'saved'): ?>
-  <div class="alert alert-success">Dados da empresa salvos com sucesso.</div>
-<?php endif; ?>
-<?php if ($err !== ''): ?>
-  <div class="alert alert-danger"><?= h($err) ?></div>
-<?php endif; ?>
-
-<form method="post" enctype="multipart/form-data" id="companyForm" autocomplete="off">
-  <input type="hidden" name="csrf" value="<?= h($token) ?>">
-
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title">Dados da Agência</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label">CNPJ</label>
-          <input class="form-control" name="cnpj" value="<?= h($companyValues['cnpj']) ?>">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Razão Social</label>
-          <input class="form-control" name="legal_name" value="<?= h($companyValues['legal_name']) ?>">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Nome Fantasia</label>
-          <input class="form-control" name="fantasy_name" value="<?= h($companyValues['fantasy_name']) ?>">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Email</label>
-          <input class="form-control" type="email" name="email" value="<?= h($companyValues['email']) ?>">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Fone</label>
-          <input class="form-control" name="phone" value="<?= h($companyValues['phone']) ?>">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title">Endereço Comercial</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3"><label class="form-label">CEP</label><input class="form-control" name="cep" value="<?= h($companyValues['cep']) ?>"></div>
-        <div class="col-md-6"><label class="form-label">Logradouro</label><input class="form-control" name="street" value="<?= h($companyValues['street']) ?>"></div>
-        <div class="col-md-3"><label class="form-label">Número</label><input class="form-control" name="number" value="<?= h($companyValues['number']) ?>"></div>
-        <div class="col-md-4"><label class="form-label">Bairro</label><input class="form-control" name="district" value="<?= h($companyValues['district']) ?>"></div>
-        <div class="col-md-4"><label class="form-label">Complemento</label><input class="form-control" name="complement" value="<?= h($companyValues['complement']) ?>"></div>
-        <div class="col-md-3"><label class="form-label">Cidade</label><input class="form-control" name="city" value="<?= h($companyValues['city']) ?>"></div>
-        <div class="col-md-1"><label class="form-label">UF</label><input class="form-control" name="uf" maxlength="2" value="<?= h($companyValues['uf']) ?>"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title">Dados Bancários</h3></div>
-    <div class="card-body">
-      <textarea class="form-control" name="bank_details" rows="5"><?= h($companyValues['bank_details']) ?></textarea>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-header"><h3 class="card-title">Arquivos</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label">Logo</label>
-          <input class="form-control" type="file" name="logo" accept="image/*">
-          <?php if ($companyValues['logo_path'] !== ''): ?><div class="small text-muted mt-1"><?= h($companyValues['logo_path']) ?></div><?php endif; ?>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Carimbo</label>
-          <input class="form-control" type="file" name="stamp" accept="image/*">
-          <?php if ($companyValues['stamp_path'] !== ''): ?><div class="small text-muted mt-1"><?= h($companyValues['stamp_path']) ?></div><?php endif; ?>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Favicon</label>
-          <input class="form-control" type="file" name="favicon" accept="image/*,.ico">
-          <?php if ($companyValues['favicon_path'] !== ''): ?><div class="small text-muted mt-1"><?= h($companyValues['favicon_path']) ?></div><?php endif; ?>
-        </div>
-      </div>
-    </div>
-  </div>
-</form>
-
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

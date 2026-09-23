@@ -62,75 +62,87 @@ if (!$user) {
     http_response_code(404);
     exit('Usuário não encontrado.');
 }
-
-$token = csrf_token();
-$pageTitle = 'Profile';
-require_once __DIR__ . '/inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-3xl">
 
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Profile</h2>
-      <div class="text-muted small">Dados do usuário atual.</div>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Conta</p>
+      <h2 class="text-xl font-bold text-ink-950">Profile</h2>
+      <p class="mt-1 text-sm text-ink-500">Dados do usuário atual.</p>
     </div>
-    <div class="col-auto ms-auto">
-      <a href="/dashboard.php" class="btn"><i class="ti ti-arrow-left"></i> Voltar</a>
-      <button class="btn btn-primary" form="profileForm"><i class="ti ti-device-floppy"></i> Salvar</button>
+    <div class="flex items-center gap-2">
+      <a href="/dashboard.php" class="btn-ghost">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+        Voltar
+      </a>
+      <button class="btn-primary" form="profileForm">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar
+      </button>
     </div>
   </div>
+
+  <?php if ($msg === 'saved'): ?>
+    <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="alert">
+      Profile salvo com sucesso.
+    </div>
+  <?php endif; ?>
+  <?php if ($err !== ''): ?>
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+      <?= h($err) ?>
+    </div>
+  <?php endif; ?>
+
+  <form method="post" id="profileForm" class="card overflow-hidden" autocomplete="off">
+    <input type="hidden" name="csrf" value="<?= h($token) ?>">
+    <div class="border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Dados pessoais</h3>
+    </div>
+    <div class="p-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="label-field" for="name">Nome</label>
+          <input class="input-field" id="name" name="name" value="<?= h($user['name']) ?>" required>
+        </div>
+        <div>
+          <label class="label-field" for="email">Email</label>
+          <input class="input-field" id="email" type="email" name="email" value="<?= h($user['email']) ?>" required>
+        </div>
+        <div>
+          <label class="label-field" for="login">Login</label>
+          <input class="input-field cursor-not-allowed bg-ink-50 text-ink-500" id="login" value="<?= h($user['login'] ?? '') ?>" disabled>
+        </div>
+        <div>
+          <label class="label-field" for="phone">Telefone</label>
+          <input class="input-field" id="phone" name="phone" value="<?= h($user['phone'] ?? '') ?>">
+        </div>
+        <div>
+          <label class="label-field" for="position">Cargo</label>
+          <input class="input-field" id="position" name="position" value="<?= h($user['position'] ?? '') ?>">
+        </div>
+        <div>
+          <label class="label-field" for="cpf">CPF</label>
+          <input class="input-field cursor-not-allowed bg-ink-50 text-ink-500" id="cpf" value="<?= h($user['cpf'] ?? '') ?>" disabled>
+        </div>
+        <div>
+          <label class="label-field" for="birth_date">Data de nascimento</label>
+          <input class="input-field cursor-not-allowed bg-ink-50 text-ink-500" id="birth_date" value="<?= h($user['birth_date'] ?? '') ?>" disabled>
+        </div>
+        <div>
+          <label class="label-field" for="role">Permissão</label>
+          <input class="input-field cursor-not-allowed bg-ink-50 text-ink-500" id="role" value="<?= h(strtoupper((string)$user['role'])) ?>" disabled>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="label-field" for="password">Nova senha</label>
+          <input class="input-field" id="password" type="password" name="password" placeholder="Preencha somente se quiser alterar">
+        </div>
+      </div>
+    </div>
+  </form>
+
 </div>
-
-<?php if ($msg === 'saved'): ?>
-  <div class="alert alert-success">Profile salvo com sucesso.</div>
-<?php endif; ?>
-<?php if ($err !== ''): ?>
-  <div class="alert alert-danger"><?= h($err) ?></div>
-<?php endif; ?>
-
-<form method="post" id="profileForm" class="card" autocomplete="off">
-  <input type="hidden" name="csrf" value="<?= h($token) ?>">
-  <div class="card-header"><h3 class="card-title">Dados pessoais</h3></div>
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Nome</label>
-        <input class="form-control" name="name" value="<?= h($user['name']) ?>" required>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Email</label>
-        <input class="form-control" type="email" name="email" value="<?= h($user['email']) ?>" required>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Login</label>
-        <input class="form-control" value="<?= h($user['login'] ?? '') ?>" disabled>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Telefone</label>
-        <input class="form-control" name="phone" value="<?= h($user['phone'] ?? '') ?>">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Cargo</label>
-        <input class="form-control" name="position" value="<?= h($user['position'] ?? '') ?>">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">CPF</label>
-        <input class="form-control" value="<?= h($user['cpf'] ?? '') ?>" disabled>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Data de nascimento</label>
-        <input class="form-control" value="<?= h($user['birth_date'] ?? '') ?>" disabled>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Permissão</label>
-        <input class="form-control" value="<?= h(strtoupper((string)$user['role'])) ?>" disabled>
-      </div>
-      <div class="col-md-12">
-        <label class="form-label">Nova senha</label>
-        <input class="form-control" type="password" name="password" placeholder="Preencha somente se quiser alterar">
-      </div>
-    </div>
-  </div>
-</form>
-
-<?php require_once __DIR__ . '/inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/inc/layout.php';

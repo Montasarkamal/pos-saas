@@ -35,164 +35,84 @@ $features = [
 ];
 
 $pageTitle = 'Sobre o Aplicativo';
-require_once __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-4xl">
 
-<style>
-.about-hero {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1.25rem;
-  align-items: center;
-  padding: 1.5rem;
-  border: 1px solid #dbe5f2;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, .05);
-}
-.about-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 2.2rem;
-}
-.about-version {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .45rem .7rem;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 800;
-}
-.about-info-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-.about-info-item {
-  padding: 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fff;
-}
-.about-info-item span {
-  display: block;
-  color: #64748b;
-  font-size: .76rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  margin-bottom: .35rem;
-}
-.about-info-item strong {
-  color: #0f172a;
-  font-size: 1rem;
-}
-.about-feature-list {
-  display: grid;
-  gap: .75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.about-feature-list li {
-  display: flex;
-  gap: .65rem;
-  align-items: flex-start;
-  padding: .85rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fff;
-}
-.about-feature-list i {
-  color: #16a34a;
-  margin-top: .12rem;
-}
-@media (max-width: 768px) {
-  .about-hero,
-  .about-info-grid { grid-template-columns: 1fr; }
-}
-</style>
-
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Sobre o Aplicativo</h2>
-      <div class="text-muted small">Informações da instalação atual e versão do sistema.</div>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Configurações</p>
+      <h2 class="text-xl font-bold text-ink-950">Sobre o Aplicativo</h2>
+      <p class="mt-1 text-sm text-ink-500">Informações da instalação atual e versão do sistema.</p>
     </div>
-    <div class="col-auto ms-auto">
-      <a href="/settings/index.php" class="btn">
-        <i class="ti ti-arrow-left"></i>Voltar
-      </a>
+    <a href="/settings/index.php" class="btn-ghost">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+      Voltar
+    </a>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-4 p-6">
+      <div class="min-w-0">
+        <span class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          Versão <?= h($appVersion) ?>
+        </span>
+        <h1 class="text-2xl font-bold text-ink-950"><?= h($appName) ?></h1>
+        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">
+          Sistema local de gestão de vendas para agência de turismo, com clientes, fornecedores, vendas, recibos, vouchers, listas operacionais e configurações administrativas.
+        </p>
+      </div>
+      <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-ink-200 bg-ink-50 text-brand-600" aria-hidden="true">
+        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="about-hero mb-3">
-  <div>
-    <div class="about-version mb-3">
-      <i class="ti ti-tag"></i>
-      Versão <?= h($appVersion) ?>
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">Última versão</span>
+      <strong class="mt-1 block text-base text-ink-950"><?= h($appVersion) ?></strong>
     </div>
-    <h1 class="mb-2"><?= h($appName) ?></h1>
-    <div class="text-muted">
-      Sistema local de gestão de vendas para agência de turismo, com clientes, fornecedores, vendas, recibos, vouchers, listas operacionais e configurações administrativas.
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">Data do release</span>
+      <strong class="mt-1 block text-base text-ink-950"><?= h($releaseDate) ?></strong>
+    </div>
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">Ambiente</span>
+      <strong class="mt-1 block text-base text-ink-950">Local</strong>
+    </div>
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">PHP</span>
+      <strong class="mt-1 block text-base text-ink-950"><?= h($phpVersion) ?></strong>
+    </div>
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">Servidor</span>
+      <strong class="mt-1 block truncate text-base text-ink-950" title="<?= h($serverSoftware) ?>"><?= h($serverSoftware) ?></strong>
+    </div>
+    <div class="card p-4">
+      <span class="block text-[11px] font-bold uppercase tracking-wider text-ink-500">Base de dados</span>
+      <strong class="mt-1 block text-base text-ink-950"><?= h($databaseName !== '' ? $databaseName : 'Não identificada') ?></strong>
     </div>
   </div>
-  <div class="about-mark" aria-hidden="true">
-    <i class="ti ti-plane"></i>
-  </div>
-</div>
 
-<div class="about-info-grid mb-3">
-  <div class="about-info-item">
-    <span>Última versão</span>
-    <strong><?= h($appVersion) ?></strong>
+  <div class="card mt-5 overflow-hidden">
+    <div class="border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Recursos principais</h3>
+    </div>
+    <div class="p-5">
+      <ul class="space-y-2.5">
+        <?php foreach ($features as $feature): ?>
+          <li class="flex items-start gap-3 rounded-xl border border-ink-100 bg-ink-50/50 px-4 py-3 text-sm text-ink-700">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span><?= h($feature) ?></span>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
   </div>
-  <div class="about-info-item">
-    <span>Data do release</span>
-    <strong><?= h($releaseDate) ?></strong>
-  </div>
-  <div class="about-info-item">
-    <span>Ambiente</span>
-    <strong>Local</strong>
-  </div>
-  <div class="about-info-item">
-    <span>PHP</span>
-    <strong><?= h($phpVersion) ?></strong>
-  </div>
-  <div class="about-info-item">
-    <span>Servidor</span>
-    <strong><?= h($serverSoftware) ?></strong>
-  </div>
-  <div class="about-info-item">
-    <span>Base de dados</span>
-    <strong><?= h($databaseName !== '' ? $databaseName : 'Não identificada') ?></strong>
-  </div>
-</div>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Recursos principais</h3>
-  </div>
-  <div class="card-body">
-    <ul class="about-feature-list">
-      <?php foreach ($features as $feature): ?>
-        <li>
-          <i class="ti ti-circle-check"></i>
-          <span><?= h($feature) ?></span>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  </div>
 </div>
-
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

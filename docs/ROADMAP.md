@@ -39,8 +39,19 @@
 | 2026-09-23 | **Ficha Fornecedor** `suppliers/show.php` محوّلة (badges + آخر الفواتير) | 2 |
 | 2026-09-23 | **Usuários** `users/index.php` + `create.php` + `edit.php` محوّلان (badges Cargo/Status + نسخ الإيميل + حماية الماستر) | 2 |
 | 2026-09-23 | مسح شامل: 22 صفحة محوّلة — 200 + صفر كلاسات Tabler قديمة + صفر أخطاء PHP | 2 |
+| 2026-09-23 | **Exportar Vendas** `sales/export.php` محوّلة (نموذج فلاتر + إشعار CSV/JSON) | 2 |
+| 2026-09-23 | **Profile** `profile.php` محوّل (بطاقة بيانات + حقول للقراءة فقط + تغيير كلمة المرور) | 2 |
+| 2026-09-23 | **Sobre** `settings/about.php` محوّلة (hero بالشعار + شبكة معلومات + قائمة الميزات) | 2 |
+| 2026-09-23 | **Dados da Empresa** `settings/company.php` محوّلة (أربع كروت: agência/endereço/bancários/arquivos) | 2 |
+| 2026-09-23 | **Novo Reembolso** `refunds/create.php` محوّل (نموذج كامل + upload comprovante) | 2 |
+| 2026-09-23 | **Detalhe Reembolso** `refunds/show.php` محوّل (badges حالة ملوّنة + دوائر ألوان timeline + إجراءات) | 2 |
+| 2026-09-23 | **Editar Reembolso** `refunds/edit.php` محوّل (بانر recibo + ملخص + timeline) | 2 |
+| 2026-09-23 | **Listas do Sistema** `settings/lists.php` محوّلة (تبويبات بـ CSS أصلي + صفوف ديناميكية + رفع شعارات الطيران) | 2 |
+| 2026-09-23 | **Backup** `settings/backup.php` محوّل (بطاقات إجراءات + معاينة SQL + منطقة الخطر purge بنفس الـ JS/ID) | 2 |
+| 2026-09-23 | **Nova Venda de Serviço** `services/create.php` محوّلة (لوحات حسب النوع + TomSelect + صفوف ضيوف/غرف ديناميكية — الـ redirect الأصلي لـ sales/create محفوظ) | 2 |
+| 2026-09-23 | **مسح شامل ختامي**: 33 صفحة — كل الصفحات على الـ shell القديم اتحوّلت (صفر refs لـ inc/header.php) — 200 + aside قبل main + صفر Tabler + field-name parity + smoke guard موسّع لـ 30 صفحة | 2 |
 
-**المتبقي في المرحلة 2**: صفحات الطباعة (print/tkt/recibo/voucher — تفضل standalone كوثائق طباعة ولا نلمسها)، بعدها المرحلة 3 (اختبارات Pest + CI + نشر تلقائي Hostinger).
+**نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع). المتبقي: المرحلة 3 (اختبارات Pest + CI + نشر تلقائي Hostinger).
 
 ---
 

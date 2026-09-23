@@ -76,9 +76,16 @@ if ($pdo instanceof PDO) {
 
     // ---- 5. Converted pages capture $body (ob_start/ob_get_clean) --------
     $convertedPages = [
-        'dashboard.php', 'sales/index.php', 'sales/show.php', 'sales/create.php', 'sales/edit.php',
-        'clients/index.php', 'suppliers/index.php', 'refunds/index.php', 'reports/index.php',
-        'settings/index.php', 'master/dashboard.php',
+        'dashboard.php', 'profile.php',
+        'sales/index.php', 'sales/show.php', 'sales/create.php', 'sales/edit.php', 'sales/export.php',
+        'clients/index.php', 'clients/create.php', 'clients/edit.php', 'clients/show.php',
+        'suppliers/index.php', 'suppliers/create.php', 'suppliers/edit.php', 'suppliers/show.php',
+        'refunds/index.php', 'refunds/create.php', 'refunds/edit.php', 'refunds/show.php',
+        'reports/index.php', 'services/create.php',
+        'settings/index.php', 'settings/about.php', 'settings/company.php', 'settings/lists.php',
+        'settings/backup.php',
+        'users/index.php', 'users/create.php', 'users/edit.php',
+        'master/dashboard.php',
     ];
     $broken = [];
     foreach ($convertedPages as $rel) {
