@@ -73,6 +73,23 @@ if ($pdo instanceof PDO) {
     } catch (Throwable $e) {
         check('core libs load', false, $e->getMessage());
     }
+
+    // ---- 5. Converted pages capture $body (ob_start/ob_get_clean) --------
+    $convertedPages = [
+        'dashboard.php', 'sales/index.php', 'sales/show.php', 'sales/create.php', 'sales/edit.php',
+        'clients/index.php', 'suppliers/index.php', 'refunds/index.php', 'reports/index.php',
+        'settings/index.php', 'master/dashboard.php',
+    ];
+    $broken = [];
+    foreach ($convertedPages as $rel) {
+        $file = dirname(__DIR__) . '/' . $rel;
+        if (!is_file($file)) { $broken[] = $rel . ' (missing)'; continue; }
+        $src = (string)file_get_contents($file);
+        if (!str_contains($src, 'ob_start') || !str_contains($src, 'ob_get_clean')) {
+            $broken[] = $rel;
+        }
+    }
+    check('converted pages capture $body', $broken === [], implode(', ', $broken));
 }
 
 echo "------------------------" . PHP_EOL;
