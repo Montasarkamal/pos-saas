@@ -30,8 +30,17 @@
 | 2026-09-23 | **Editar Venda** `sales/edit.php` محوّلة بالكامل | 2 |
 | 2026-09-23 | **Master Dashboard** `master/dashboard.php` محوّل (KPIs + Empresas + Saúde/Ferramentas + نشاط) | 2 |
 | 2026-09-23 | Demo data seeder (`local-setup/seed-demo-data.php`) + إصلاح باگ إدراج العملاء | — |
+| 2026-09-23 | إصلاح باگ خفي: `sales/create.php` كان ناقص `ob_start()` — الفورم كان بيترندر بره الـ shell + guard رجعي في smoke | 2 |
+| 2026-09-23 | مكوّن autocomplete vanilla بيحل محل jQuery UI (بيكلم نفس `search_clients.php`) | 2 |
+| 2026-09-23 | **Novo Cliente** `clients/create.php` محوّلة (rule radios + autocomplete "Trabalha Na") | 2 |
+| 2026-09-23 | **Editar Cliente** `clients/edit.php` محوّلة (نفس الـ autocomplete) | 2 |
+| 2026-09-23 | **Ficha Cliente** `clients/show.php` محوّلة (بطاقة معلومات + الإجراءات/WhatsApp + جدول المبيعات القابل للفرز + تحديث status فوري) | 2 |
+| 2026-09-23 | **Novo/Editar Fornecedor** `suppliers/create.php` + `edit.php` محوّلان | 2 |
+| 2026-09-23 | **Ficha Fornecedor** `suppliers/show.php` محوّلة (badges + آخر الفواتير) | 2 |
+| 2026-09-23 | **Usuários** `users/index.php` + `create.php` + `edit.php` محوّلان (badges Cargo/Status + نسخ الإيميل + حماية الماستر) | 2 |
+| 2026-09-23 | مسح شامل: 22 صفحة محوّلة — 200 + صفر كلاسات Tabler قديمة + صفر أخطاء PHP | 2 |
 
-**المتبقي في المرحلة 2**: صفحات الوحدات الداخلية (clients/suppliers/users create/show/edit)، صفحات الطباعة (print/tkt/recibo/voucher — تفضل standalone كوثائق طباعة)، ثم المرحلة 3 (اختبارات/Pest + CI + نشر تلقائي Hostinger).
+**المتبقي في المرحلة 2**: صفحات الطباعة (print/tkt/recibo/voucher — تفضل standalone كوثائق طباعة ولا نلمسها)، بعدها المرحلة 3 (اختبارات Pest + CI + نشر تلقائي Hostinger).
 
 ---
 
