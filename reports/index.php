@@ -4,7 +4,7 @@
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/reports_error.log');
 
-// reports.php — Relatórios (KPIs + Gráficos + Tabelas)
+// reports.php — Relatórios (KPIs + Gráficos + Tabelas) — modern layout (Phase 2)
 // Requisitos esperados no projeto:
 // - /inc/auth.php (require_login())
 // - /inc/db.php   ($pdo)
@@ -13,6 +13,7 @@ ini_set('error_log', __DIR__ . '/reports_error.log');
 require __DIR__ . '/../inc/auth.php';
 require_once __DIR__ . '/../inc/db.php';
 require_once __DIR__ . '/../inc/helpers.php';
+require_once __DIR__ . '/../inc/ui.php';
 require_login();
 
 
@@ -199,418 +200,339 @@ $seriesSales  = array_fill(1, 12, 0.0);
 $seriesProfit = array_fill(1, 12, 0.0);
 $seriesPaid   = array_fill(1, 12, 0.0);
 
-if ($invDate) {
-  $st = $pdo->prepare("
-    SELECT MONTH(i.`$invDate`) AS mm,
-           SUM($exprTotal)  AS sales,
-           SUM($exprPaid)   AS paid,
-           SUM($exprProfit) AS profit
-      FROM invoices i
-	     WHERE DATE(i.`$invDate`) BETWEEN :yf AND :yt AND i.agency_id = :agency_id
-  GROUP BY mm
-  ");
-	  $st->execute([':yf'=>$yearFrom, ':yt'=>$yearTo, ':agency_id'=>agency_id()]);
-  while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
-    $mm = (int)$r['mm'];
-    if ($mm>=1 && $mm<=12) {
-      $seriesSales[$mm]  = (float)$r['sales'];
-      $seriesPaid[$mm]   = (float)$r['paid'];
-      $seriesProfit[$mm] = (float)$r['profit'];
-    }
-  }
-}
+// [the remaining PHP between here and header include computes bottom 3 sections]
 
-// ======================
-// Top lists (Clientes / Fornecedores / Faturas)
-// ======================
 $topClients = [];
 $topSuppliers = [];
 $topInvoices = [];
 
-if ($invTotal && $invCols && has_col($invCols,'client_id') && in_array('id',$cliCols,true)) {
-  $st = $pdo->prepare("
-    SELECT c.`$cliName` AS nome, SUM($exprTotal) AS total
-      FROM invoices i
-	      JOIN clients c ON c.id = i.client_id AND c.agency_id = i.agency_id
-     WHERE $whereDateInv
-  GROUP BY c.id
-  ORDER BY total DESC
-     LIMIT 10
-  ");
-	  $st->execute($periodParams);
-  $topClients = $st->fetchAll(PDO::FETCH_ASSOC);
+// clientes / fornecedores / faturas top-10
+$cliNameSql = $cliName ? "COALESCE(c.`$cliName`,'—')" : "'—'";
+$supNameSql = $supName ? "COALESCE(s.`$supName`,'—')" : "'—'";
+$invNoCol   = pick_col($invCols, ['invoice_number','numero','n','invoice_no']);
+$invNumSql  = $invNoCol ? "COALESCE(i.`$invNoCol`,'—')" : "'#' || i.id";
+
+if ($cliName && $invTotal) {
+  try {
+    $st = $pdo->prepare("
+      SELECT $cliNameSql AS nome, CAST(SUM($exprTotal) AS DECIMAL(14,2)) AS total
+        FROM invoices i
+        LEFT JOIN clients c ON c.id = i.client_id AND c.agency_id = i.agency_id
+       WHERE i.agency_id = :agency_id AND DATE(i.`$invDate`) BETWEEN :from AND :to
+       GROUP BY c.id
+       ORDER BY total DESC LIMIT 10
+    ");
+    $st->execute($periodParams);
+    $topClients = $st->fetchAll(PDO::FETCH_ASSOC);
+  } catch (Throwable $e) { error_log('reports topClients: '.$e->getMessage()); }
 }
 
-if ($invCols && has_col($invCols,'supplier_id') && in_array('id',$supCols,true)) {
-  $st = $pdo->prepare("
-    SELECT s.`$supName` AS nome, SUM(" . ($invSupplier ? "COALESCE(i.`$invSupplier`,0)" : "0") . ") AS custo
-      FROM invoices i
-	      JOIN suppliers s ON s.id = i.supplier_id AND s.agency_id = i.agency_id
-     WHERE $whereDateInv
-  GROUP BY s.id
-  ORDER BY custo DESC
-     LIMIT 10
-  ");
-	  $st->execute($periodParams);
-  $topSuppliers = $st->fetchAll(PDO::FETCH_ASSOC);
+if ($supName && $invSupplier) {
+  try {
+    $st = $pdo->prepare("
+      SELECT $supNameSql AS nome, CAST(SUM($exprSupplier) AS DECIMAL(14,2)) AS custo
+        FROM invoices i
+        LEFT JOIN suppliers s ON s.id = i.supplier_id AND s.agency_id = i.agency_id
+       WHERE i.agency_id = :agency_id AND DATE(i.`$invDate`) BETWEEN :from AND :to
+       GROUP BY s.id
+       ORDER BY custo DESC LIMIT 10
+    ");
+    $st->execute($periodParams);
+    $topSuppliers = $st->fetchAll(PDO::FETCH_ASSOC);
+  } catch (Throwable $e) { error_log('reports topSuppliers: '.$e->getMessage()); }
 }
 
-if ($invCols && has_col($invCols,'invoice_number')) {
-  $st = $pdo->prepare("
-    SELECT i.invoice_number AS numero, $exprTotal AS total, $exprProfit AS lucro
-      FROM invoices i
-     WHERE $whereDateInv
-  ORDER BY lucro DESC
-     LIMIT 10
-  ");
-	  $st->execute($periodParams);
-  $topInvoices = $st->fetchAll(PDO::FETCH_ASSOC);
+if ($invTotal) {
+  try {
+    $st = $pdo->prepare("
+      SELECT $invNumSql AS numero, CAST(SUM($exprTotal) AS DECIMAL(14,2)) AS total,
+             CAST(SUM($exprProfit) AS DECIMAL(14,2)) AS lucro
+        FROM invoices i
+       WHERE i.agency_id = :agency_id AND DATE(i.`$invDate`) BETWEEN :from AND :to
+       GROUP BY i.id
+       ORDER BY total DESC LIMIT 10
+    ");
+    $st->execute($periodParams);
+    $topInvoices = $st->fetchAll(PDO::FETCH_ASSOC);
+  } catch (Throwable $e) { error_log('reports topInvoices: '.$e->getMessage()); }
 }
 
-// ======================
-// UI داخل layout الرئيسي للنظام
-// ======================
+// série mensal
+if ($invDate && $invTotal) {
+  try {
+    $stM = $pdo->prepare("
+      SELECT MONTH(i.`$invDate`) AS m,
+             SUM($exprTotal) AS s_total,
+             SUM($exprPaid)  AS s_paid,
+             SUM($exprProfit) AS s_profit
+        FROM invoices i
+       WHERE i.agency_id = :agency_id
+         AND DATE(i.`$invDate`) BETWEEN :yfrom AND :yto
+       GROUP BY MONTH(i.`$invDate`)
+    ");
+    $stM->execute([':agency_id'=>agency_id(), ':yfrom'=>$yearFrom, ':yto'=>$yearTo]);
+    foreach ($stM->fetchAll(PDO::FETCH_ASSOC) as $row) {
+      $m = (int)$row['m'];
+      if ($m >= 1 && $m <= 12) {
+        $seriesSales[$m]  = (float)($row['s_total'] ?? 0);
+        $seriesPaid[$m]   = (float)($row['s_paid'] ?? 0);
+        $seriesProfit[$m] = (float)($row['s_profit'] ?? 0);
+      }
+    }
+  } catch (Throwable $e) { error_log('reports monthly series: '.$e->getMessage()); }
+}
+
 $reportsBackHref = $role === 'superadmin' ? '/master/dashboard.php' : '/dashboard.php';
-require __DIR__ . '/../inc/header.php';
+
+ob_start();
 ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-  .kpi-card .h1{ margin:0; }
-  .muted{ color:#64748b; }
-  .mono{ font-variant-numeric: tabular-nums; }
-  .reports-filter{
-    background: rgba(255,255,255,.72);
-    border: 1px solid rgba(148,163,184,.24);
-    border-radius: 18px;
-    padding: 1rem;
-    box-shadow: 0 16px 40px rgba(15,23,42,.06);
-  }
-  @media print{
-    .no-print{ display:none !important; }
-    .card{ break-inside: avoid; }
-  }
-</style>
-
-<div class="page-header no-print">
-  <div class="row g-2 align-items-center">
-    <div class="col">
-      <div class="page-pretitle">KAMALTUR POS</div>
-      <h2 class="page-title">Relatórios do Sistema</h2>
-      <div class="text-secondary">
-        Período: <span class="mono"><?= htmlspecialchars($from) ?></span> até <span class="mono"><?= htmlspecialchars($to) ?></span>
-      </div>
+<!-- Header -->
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <h2 class="text-xl font-bold text-ink-950">Relatórios do Sistema</h2>
+        <p class="mt-0.5 text-sm text-ink-500">
+            Período: <span class="font-mono"><?= htmlspecialchars($from) ?></span> até <span class="font-mono"><?= htmlspecialchars($to) ?></span>
+        </p>
     </div>
-    <div class="col-auto ms-auto d-print-none">
-      <div class="btn-list">
-        <button class="btn btn-outline-secondary" onclick="window.print()">Imprimir</button>
-        <a class="btn btn-outline-secondary" href="?preset=this_month">Este mês</a>
-        <a class="btn btn-outline-secondary" href="?preset=this_year">Este ano</a>
-        <a class="btn btn-outline-secondary" href="?preset=last_12m">Últimos 12 meses</a>
-      </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <button class="btn-ghost" onclick="window.print()">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Imprimir
+        </button>
+        <a class="btn-ghost" href="?preset=this_month"><span class="text-xs">Este mês</span></a>
+        <a class="btn-ghost" href="?preset=this_year"><span class="text-xs">Este ano</span></a>
+        <a class="btn-ghost" href="?preset=last_12m"><span class="text-xs">Últimos 12 meses</span></a>
     </div>
-  </div>
-
-  <form class="reports-filter row g-2 mt-3" method="get">
-    <div class="col-12 col-md-3">
-      <label class="form-label">De</label>
-      <input type="date" name="from" class="form-control" value="<?= htmlspecialchars($from) ?>">
-    </div>
-    <div class="col-12 col-md-3">
-      <label class="form-label">Até</label>
-      <input type="date" name="to" class="form-control" value="<?= htmlspecialchars($to) ?>">
-    </div>
-    <div class="col-12 col-md-2">
-      <label class="form-label">Ano (gráficos)</label>
-      <input type="number" name="year" class="form-control" value="<?= (int)$year ?>" min="2000" max="2100">
-    </div>
-    <div class="col-12 col-md-4 d-flex align-items-end gap-2">
-      <button class="btn btn-primary" type="submit">Aplicar</button>
-      <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($reportsBackHref) ?>">Voltar</a>
-    </div>
-  </form>
 </div>
 
-        <!-- KPIs gerais -->
-        <div class="row row-cards">
-          <div class="col-6 col-lg-3">
-            <div class="card kpi-card">
-              <div class="card-body">
-                <div class="subheader">Clientes</div>
-                <div class="h1 mono"><?= number_format($totClients, 0, ',', '.') ?></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card kpi-card">
-              <div class="card-body">
-                <div class="subheader">Fornecedores</div>
-                <div class="h1 mono"><?= number_format($totSuppliers, 0, ',', '.') ?></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card kpi-card">
-              <div class="card-body">
-                <div class="subheader">Faturas</div>
-                <div class="h1 mono"><?= number_format($totInvoices, 0, ',', '.') ?></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card kpi-card">
-              <div class="card-body">
-                <div class="subheader">Reembolsos</div>
-                <div class="h1 mono"><?= number_format($totRefunds, 0, ',', '.') ?></div>
-              </div>
-            </div>
-          </div>
+<!-- Filtros -->
+<form method="get" class="card mb-5 p-5">
+    <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div>
+            <label class="label-field" for="r-from">De</label>
+            <input id="r-from" class="select-field" type="date" name="from" value="<?= htmlspecialchars($from) ?>">
         </div>
-
-        <!-- KPIs financeiros (período) -->
-        <div class="row row-cards mt-2">
-          <div class="col-12 col-lg-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Faturas no período</div>
-                <div class="h1 mono"><?= number_format($periodInvoices, 0, ',', '.') ?></div>
-                <div class="text-secondary">Intervalo aplicado</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Vendas (Sales)</div>
-                <div class="h1 mono"><?= brl($periodSales) ?></div>
-                <div class="text-secondary">Soma do total</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Recebido (Paid)</div>
-                <div class="h1 mono"><?= brl($periodPaid) ?></div>
-                <div class="text-secondary">Total pago</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Em aberto (Unpaid)</div>
-                <div class="h1 mono"><?= brl($periodUnpaid) ?></div>
-                <div class="text-secondary">Total pendente</div>
-              </div>
-            </div>
-          </div>
+        <div>
+            <label class="label-field" for="r-to">Até</label>
+            <input id="r-to" class="select-field" type="date" name="to" value="<?= htmlspecialchars($to) ?>">
         </div>
+        <div>
+            <label class="label-field" for="r-year">Ano (gráficos)</label>
+            <input id="r-year" class="select-field" type="number" name="year" value="<?= (int)$year ?>" min="2000" max="2100">
+        </div>
+        <div class="flex gap-2 md:col-span-2 lg:col-span-1">
+            <button class="btn-primary flex-1 sm:flex-none sm:px-8" type="submit">Aplicar</button>
+            <a class="btn-ghost" href="<?= htmlspecialchars($reportsBackHref) ?>">Voltar</a>
+        </div>
+    </div>
+</form>
 
+<!-- KPIs gerais -->
+<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card p-5">
+        <p class="stat-label">Clientes</p>
+        <p class="stat-value"><?= number_format($totClients, 0, ',', '.') ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Fornecedores</p>
+        <p class="stat-value"><?= number_format($totSuppliers, 0, ',', '.') ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Faturas</p>
+        <p class="stat-value"><?= number_format($totInvoices, 0, ',', '.') ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Reembolsos</p>
+        <p class="stat-value"><?= number_format($totRefunds, 0, ',', '.') ?></p>
+    </div>
+</div>
+
+<!-- KPIs financeiros (período) -->
+<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card p-5">
+        <p class="stat-label">Faturas no período</p>
+        <p class="stat-value"><?= number_format($periodInvoices, 0, ',', '.') ?></p>
+        <p class="mt-1 text-xs text-ink-400">Intervalo aplicado</p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Vendas (Sales)</p>
+        <p class="stat-value text-brand-600"><?= brl($periodSales) ?></p>
+        <p class="mt-1 text-xs text-ink-400">Soma do total</p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Recebido (Paid)</p>
+        <p class="stat-value text-emerald-600"><?= brl($periodPaid) ?></p>
+        <p class="mt-1 text-xs text-ink-400">Total pago</p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Em aberto (Unpaid)</p>
+        <p class="stat-value text-red-500"><?= brl($periodUnpaid) ?></p>
+        <p class="mt-1 text-xs text-ink-400">Total pendente</p>
+    </div>
+</div>
+
+<?php if ($canSeeCash): ?>
+<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="card p-5">
+        <p class="stat-label">Lucro (Profit) — período</p>
+        <p class="stat-value"><?= brl($periodProfit) ?></p>
+        <p class="mt-1 text-xs text-ink-400">Cálculo automático conforme colunas disponíveis</p>
+        <p class="mt-2 font-mono text-[11px] text-ink-400"><?= htmlspecialchars($exprProfit) ?></p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Total Reembolsos — período</p>
+        <p class="stat-value"><?= brl($refundTotalAmt) ?></p>
+        <p class="mt-1 text-xs text-ink-400">Soma dos reembolsos</p>
+    </div>
+    <div class="card p-5">
+        <p class="stat-label">Taxa de recebimento</p>
+        <?php $rate = ($periodSales > 0) ? ($periodPaid / $periodSales) * 100 : 0; ?>
+        <p class="stat-value"><?= number_format($rate, 2, ',', '.') ?>%</p>
+        <p class="mt-1 text-xs text-ink-400">Paid / Sales</p>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Gráficos -->
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-12">
+    <div class="card p-5 lg:col-span-8">
+        <h3 class="mb-4 text-sm font-bold text-ink-950">Vendas e Recebidos — <?= (int)$year ?></h3>
+        <canvas id="chartSales" height="110"></canvas>
+    </div>
+    <div class="card p-5 lg:col-span-4">
+        <h3 class="mb-4 text-sm font-bold text-ink-950">Lucro — <?= (int)$year ?></h3>
         <?php if ($canSeeCash): ?>
-        <div class="row row-cards mt-2">
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Lucro (Profit) — período</div>
-                <div class="h1 mono"><?= brl($periodProfit) ?></div>
-                <div class="text-secondary">Cálculo automático conforme colunas disponíveis</div>
-                <div class="mt-2 muted">
-                  <small>
-                    Expressão: <span class="mono"><?= htmlspecialchars($exprProfit) ?></span>
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Total Reembolsos — período</div>
-                <div class="h1 mono"><?= brl($refundTotalAmt) ?></div>
-                <div class="text-secondary">Soma dos reembolsos</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-body">
-                <div class="subheader">Taxa de recebimento</div>
-                <?php $rate = ($periodSales > 0) ? ($periodPaid / $periodSales) * 100 : 0; ?>
-                <div class="h1 mono"><?= number_format($rate, 2, ',', '.') ?>%</div>
-                <div class="text-secondary">Paid / Sales</div>
-              </div>
-            </div>
-          </div>
-        </div>
+            <canvas id="chartProfit" height="170"></canvas>
+        <?php else: ?>
+            <p class="text-sm text-ink-400">Sem permissão para visualizar lucro.</p>
         <?php endif; ?>
+    </div>
+</div>
 
-        <!-- Gráficos -->
-        <div class="row row-cards mt-2">
-          <div class="col-12 col-lg-8">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Vendas e Recebidos — <?= (int)$year ?></h3>
-              </div>
-              <div class="card-body">
-                <canvas id="chartSales" height="110"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Lucro — <?= (int)$year ?></h3>
-              </div>
-              <div class="card-body">
-                <?php if ($canSeeCash): ?>
-                  <canvas id="chartProfit" height="170"></canvas>
-                <?php else: ?>
-                  <div class="text-secondary">Sem permissão para visualizar lucro.</div>
-                <?php endif; ?>
-              </div>
-            </div>
-          </div>
+<!-- Top lists -->
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4"><h3 class="text-sm font-bold text-ink-950">Top 10 Clientes (Vendas)</h3></div>
+        <div class="overflow-x-auto">
+            <table class="table-modern">
+                <thead><tr><th>Cliente</th><th class="text-right">Total</th></tr></thead>
+                <tbody>
+                    <?php if (!$topClients): ?>
+                        <tr><td colspan="2" class="text-center text-ink-400">Sem dados (verifique client_id / total).</td></tr>
+                    <?php else: foreach ($topClients as $r): ?>
+                        <tr>
+                            <td class="font-medium text-ink-950"><?= htmlspecialchars($r['nome'] ?? '—') ?></td>
+                            <td class="text-right tabular-nums"><?= brl((float)$r['total']) ?></td>
+                        </tr>
+                    <?php endforeach; endif; ?>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <!-- Top lists -->
-        <div class="row row-cards mt-2">
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Top 10 Clientes (Vendas)</h3></div>
-              <div class="table-responsive">
-                <table class="table table-vcenter card-table">
-                  <thead><tr><th>Cliente</th><th class="text-end">Total</th></tr></thead>
-                  <tbody>
-                  <?php if (!$topClients): ?>
-                    <tr><td colspan="2" class="text-secondary">Sem dados (verifique client_id / total).</td></tr>
-                  <?php else: foreach ($topClients as $r): ?>
-                    <tr>
-                      <td><?= htmlspecialchars($r['nome'] ?? '—') ?></td>
-                      <td class="text-end mono"><?= brl((float)$r['total']) ?></td>
-                    </tr>
-                  <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Top 10 Fornecedores (Custo)</h3></div>
-              <div class="table-responsive">
-                <table class="table table-vcenter card-table">
-                  <thead><tr><th>Fornecedor</th><th class="text-end">Custo</th></tr></thead>
-                  <tbody>
-                  <?php if (!$topSuppliers): ?>
-                    <tr><td colspan="2" class="text-secondary">Sem dados (verifique supplier_id / supplier_total).</td></tr>
-                  <?php else: foreach ($topSuppliers as $r): ?>
-                    <tr>
-                      <td><?= htmlspecialchars($r['nome'] ?? '—') ?></td>
-                      <td class="text-end mono"><?= brl((float)$r['custo']) ?></td>
-                    </tr>
-                  <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Top 10 Faturas (Lucro)</h3></div>
-              <div class="table-responsive">
-                <table class="table table-vcenter card-table">
-                  <thead><tr><th>Fatura</th><th class="text-end">Total</th><?php if ($canSeeCash): ?><th class="text-end">Lucro</th><?php endif; ?></tr></thead>
-                  <tbody>
-                  <?php if (!$topInvoices): ?>
-                    <tr><td colspan="<?= $canSeeCash?3:2 ?>" class="text-secondary">Sem dados (verifique invoice_number).</td></tr>
-                  <?php else: foreach ($topInvoices as $r): ?>
-                    <tr>
-                      <td class="mono"><?= htmlspecialchars($r['numero'] ?? '—') ?></td>
-                      <td class="text-end mono"><?= brl((float)$r['total']) ?></td>
-                      <?php if ($canSeeCash): ?>
-                        <td class="text-end mono"><?= brl((float)$r['lucro']) ?></td>
-                      <?php endif; ?>
-                    </tr>
-                  <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4"><h3 class="text-sm font-bold text-ink-950">Top 10 Fornecedores (Custo)</h3></div>
+        <div class="overflow-x-auto">
+            <table class="table-modern">
+                <thead><tr><th>Fornecedor</th><th class="text-right">Custo</th></tr></thead>
+                <tbody>
+                    <?php if (!$topSuppliers): ?>
+                        <tr><td colspan="2" class="text-center text-ink-400">Sem dados (verifique supplier_id / supplier_total).</td></tr>
+                    <?php else: foreach ($topSuppliers as $r): ?>
+                        <tr>
+                            <td class="font-medium text-ink-950"><?= htmlspecialchars($r['nome'] ?? '—') ?></td>
+                            <td class="text-right tabular-nums"><?= brl((float)$r['custo']) ?></td>
+                        </tr>
+                    <?php endforeach; endif; ?>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <!-- Refunds por status -->
-        <div class="row row-cards mt-2">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Reembolsos por Status (período)</h3></div>
-              <div class="table-responsive">
-                <table class="table table-vcenter card-table">
-                  <thead><tr><th>Status</th><th class="text-end">Total</th></tr></thead>
-                  <tbody>
-                  <?php if (!$refAmount): ?>
-                    <tr><td colspan="2" class="text-secondary">Tabela refunds não tem coluna de valor (amount/valor/total).</td></tr>
-                  <?php elseif (!$refundByStatus): ?>
-                    <tr><td colspan="2" class="text-secondary">Sem reembolsos no período.</td></tr>
-                  <?php else: foreach ($refundByStatus as $r): ?>
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4"><h3 class="text-sm font-bold text-ink-950">Top 10 Faturas (Lucro)</h3></div>
+        <div class="overflow-x-auto">
+            <table class="table-modern">
+                <thead><tr><th>Fatura</th><th class="text-right">Total</th><?php if ($canSeeCash): ?><th class="text-right">Lucro</th><?php endif; ?></tr></thead>
+                <tbody>
+                    <?php if (!$topInvoices): ?>
+                        <tr><td colspan="<?= $canSeeCash?3:2 ?>" class="text-center text-ink-400">Sem dados (verifique invoice_number).</td></tr>
+                    <?php else: foreach ($topInvoices as $r): ?>
+                        <tr>
+                            <td class="font-mono text-xs"><?= htmlspecialchars($r['numero'] ?? '—') ?></td>
+                            <td class="text-right tabular-nums"><?= brl((float)$r['total']) ?></td>
+                            <?php if ($canSeeCash): ?>
+                                <td class="text-right tabular-nums"><?= brl((float)$r['lucro']) ?></td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Reembolsos por status -->
+<div class="card overflow-hidden">
+    <div class="border-b border-ink-100 px-5 py-4"><h3 class="text-sm font-bold text-ink-950">Reembolsos por Status (período)</h3></div>
+    <div class="overflow-x-auto">
+        <table class="table-modern">
+            <thead><tr><th>Status</th><th class="text-right">Total</th></tr></thead>
+            <tbody>
+                <?php if (!$refAmount): ?>
+                    <tr><td colspan="2" class="text-center text-ink-400">Tabela refunds não tem coluna de valor (amount/valor/total).</td></tr>
+                <?php elseif (!$refundByStatus): ?>
+                    <tr><td colspan="2" class="text-center text-ink-400">Sem reembolsos no período.</td></tr>
+                <?php else: foreach ($refundByStatus as $r): ?>
                     <tr>
-                      <td><?= htmlspecialchars($r['status'] ?? '—') ?></td>
-                      <td class="text-end mono"><?= brl((float)$r['total']) ?></td>
+                        <td><?= htmlspecialchars($r['status'] ?? '—') ?></td>
+                        <td class="text-right tabular-nums"><?= brl((float)$r['total']) ?></td>
                     </tr>
-                  <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
+                <?php endforeach; endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php if ($role === 'superadmin'): ?>
+<!-- Debug: visível apenas para superadmin -->
+<details class="card mt-4">
+    <summary class="cursor-pointer border-b border-ink-100 px-5 py-4 text-sm font-bold text-ink-950">Debug — colunas detectadas</summary>
+    <div class="grid grid-cols-1 gap-6 p-5 md:grid-cols-2">
+        <div>
+            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-ink-400">Invoices</p>
+            <div class="space-y-1 font-mono text-xs text-ink-600">
+                <div>date: <?= htmlspecialchars($invDate ?? '—') ?></div>
+                <div>total: <?= htmlspecialchars($invTotal ?? '—') ?></div>
+                <div>paid: <?= htmlspecialchars($invPaid ?? '—') ?></div>
+                <div>due: <?= htmlspecialchars($invDue ?? '—') ?></div>
+                <div>profit: <?= htmlspecialchars($invProfit ?? '—') ?></div>
+                <div>supplier: <?= htmlspecialchars($invSupplier ?? '—') ?></div>
+                <div>fees: <?= htmlspecialchars($invFees ?? '—') ?></div>
+                <div>status: <?= htmlspecialchars($invStatus ?? '—') ?></div>
             </div>
-          </div>
         </div>
-
-        <?php if ($role === 'superadmin'): ?>
-        <!-- Debug: visível apenas para superadmin -->
-        <div class="row row-cards mt-2 no-print">
-          <div class="col-12">
-            <details class="card">
-              <summary class="card-header"><strong>Debug — الأعمدة المكتشفة</strong></summary>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-12 col-lg-6">
-                    <div class="text-secondary mb-2"><strong>Invoices</strong></div>
-                    <div class="mono">date: <?= htmlspecialchars($invDate ?? '—') ?></div>
-                    <div class="mono">total: <?= htmlspecialchars($invTotal ?? '—') ?></div>
-                    <div class="mono">paid: <?= htmlspecialchars($invPaid ?? '—') ?></div>
-                    <div class="mono">due: <?= htmlspecialchars($invDue ?? '—') ?></div>
-                    <div class="mono">profit: <?= htmlspecialchars($invProfit ?? '—') ?></div>
-                    <div class="mono">supplier: <?= htmlspecialchars($invSupplier ?? '—') ?></div>
-                    <div class="mono">fees: <?= htmlspecialchars($invFees ?? '—') ?></div>
-                    <div class="mono">status: <?= htmlspecialchars($invStatus ?? '—') ?></div>
-                  </div>
-                  <div class="col-12 col-lg-6">
-                    <div class="text-secondary mb-2"><strong>Refunds</strong></div>
-                    <div class="mono">date: <?= htmlspecialchars($refDate ?? '—') ?></div>
-                    <div class="mono">status: <?= htmlspecialchars($refStatus ?? '—') ?></div>
-                    <div class="mono">amount: <?= htmlspecialchars($refAmount ?? '—') ?></div>
-                  </div>
-                </div>
-              </div>
-            </details>
-          </div>
+        <div>
+            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-ink-400">Refunds</p>
+            <div class="space-y-1 font-mono text-xs text-ink-600">
+                <div>date: <?= htmlspecialchars($refDate ?? '—') ?></div>
+                <div>status: <?= htmlspecialchars($refStatus ?? '—') ?></div>
+                <div>amount: <?= htmlspecialchars($refAmount ?? '—') ?></div>
+            </div>
         </div>
-        <?php endif; ?>
+    </div>
+</details>
+<?php endif; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
   const labels = <?= json_encode($months, JSON_UNESCAPED_UNICODE) ?>;
 
   const sales  = <?= json_encode(array_values($seriesSales), JSON_UNESCAPED_UNICODE) ?>;
   const paid   = <?= json_encode(array_values($seriesPaid), JSON_UNESCAPED_UNICODE) ?>;
   const profit = <?= json_encode(array_values($seriesProfit), JSON_UNESCAPED_UNICODE) ?>;
+
+  const BRAND = '#6273f2', EMERALD = '#10b981', CYAN = '#06b6d4', INK = '#525a73';
 
   // Vendas x Recebidos
   const ctxSales = document.getElementById('chartSales');
@@ -620,13 +542,13 @@ require __DIR__ . '/../inc/header.php';
       data: {
         labels,
         datasets: [
-          { label: 'Vendas', data: sales, tension: 0.25 },
-          { label: 'Recebido', data: paid, tension: 0.25 }
+          { label: 'Vendas', data: sales, tension: 0.25, borderColor: BRAND, backgroundColor: BRAND + '1a', fill: true },
+          { label: 'Recebido', data: paid, tension: 0.25, borderColor: EMERALD, backgroundColor: EMERALD + '1a', fill: true }
         ]
       },
       options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } },
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } },
         scales: {
           y: { ticks: { callback: v => (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) } }
         }
@@ -641,11 +563,11 @@ require __DIR__ . '/../inc/header.php';
       type: 'bar',
       data: {
         labels,
-        datasets: [{ label: 'Lucro', data: profit }]
+        datasets: [{ label: 'Lucro', data: profit, backgroundColor: CYAN + '99', borderColor: CYAN, borderWidth: 1, borderRadius: 6 }]
       },
       options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } },
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } },
         scales: {
           y: { ticks: { callback: v => (Number(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) } }
         }
@@ -653,4 +575,6 @@ require __DIR__ . '/../inc/header.php';
     });
   }
 </script>
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
