@@ -497,147 +497,95 @@ try {
   error_log('[SALES_CREATE_SUPPLIERS_SEED] uid='.($_SESSION['uid'] ?? 'null').' :: '.$e->getMessage());
 }
 $pageTitle = 'Nova Venda';
-require __DIR__ . '/../inc/header.php';
 ?>
-<style>
-.table-wrap { overflow:auto; -webkit-overflow-scrolling:touch; }
-.table-wrap .table { min-width: 820px; }
-.is-invalid { background: #fff1f2 !important; border-color: #dc3545 !important; }
-#invoiceForm .card { overflow: visible; }
-#invoiceForm .ts-wrapper { position: relative; z-index: 20; }
-#invoiceForm .ts-wrapper.dropdown-active { z-index: 3000; }
-#invoiceForm .card:has(.ts-wrapper.dropdown-active) {
-  position: relative;
-  z-index: 4000;
-}
-.ts-dropdown {
-  z-index: 9999 !important;
-}
-.ts-dropdown .ts-dropdown-content {
-  max-height: 240px;
-}
-.trip-card {
-  border: 1px solid #dbe3ee;
-  border-radius: 10px;
-  padding: 1rem;
-  background: #fff;
-}
-.trip-card + .trip-card { margin-top: 1rem; }
-.trip-title { font-weight: 700; color: #0f172a; }
-.trip-subsection {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-  margin: 1rem 0 .5rem;
-}
-.trip-subsection-title {
-  font-weight: 700;
-  color: #334155;
-}
-.trip-table-wrap { overflow: auto; -webkit-overflow-scrolling: touch; }
-.trip-table-wrap .table { min-width: 820px; }
-.trip-empty {
-  border: 1px dashed #cbd5e1;
-  border-radius: 10px;
-  color: #64748b;
-  padding: 1.25rem;
-  text-align: center;
-}
-.aux-service-card {
-  border: 1px solid #dbe3ee;
-  border-radius: 10px;
-  padding: 1rem;
-  background: #fff;
-}
-.aux-service-card + .aux-service-card { margin-top: 1rem; }
-.aux-service-title { font-weight: 700; color: #0f172a; }
-</style>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
-<form method="post" id="invoiceForm" autocomplete="off">
-  <?php if ($err): ?><div class="alert alert-danger"><?= htmlspecialchars($err) ?></div><?php endif; ?>
+<form method="post" id="invoiceForm" autocomplete="off" class="space-y-5">
+  <?php if ($err): ?>
+    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+      <?= htmlspecialchars($err) ?>
+    </div>
+  <?php endif; ?>
 
   <datalist id="clientsNames"></datalist>
 
   <!-- Dados da Venda -->
-  <div class="card">
-    <div class="card-header"><h3 class="card-title">Dados da Venda</h3></div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-lg-2 col-md-4">
-          <label class="form-label">Nº Venda</label>
-          <input type="text" class="form-control" value="<?= htmlspecialchars($display_invoice_number ?: 'Automático ao salvar') ?>" readonly>
+  <div class="card overflow-hidden">
+    <div class="border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Dados da Venda</h3>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-2">
+          <label class="label-field">Nº Venda</label>
+          <input type="text" class="input-field" value="<?= htmlspecialchars($display_invoice_number ?: 'Automático ao salvar') ?>" readonly>
         </div>
-        <div class="col-lg-5 col-md-8">
-          <label class="form-label">Cliente *</label>
-          <select class="form-select" id="clientSelect" name="client_id" required>
+        <div class="xl:col-span-4">
+          <label class="label-field">Cliente *</label>
+          <select class="select-field" id="clientSelect" name="client_id" required>
             <option value="">— selecione —</option>
           </select>
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Data de emissão</label>
-          <input type="date" class="form-control" name="issue_date" value="<?= date('Y-m-d') ?>" required>
+        <div class="xl:col-span-3">
+          <label class="label-field">Data de emissão</label>
+          <input type="date" class="select-field" name="issue_date" value="<?= date('Y-m-d') ?>" required>
         </div>
-        <div class="col-lg-2 col-md-6">
-          <label class="form-label">Status</label>
-          <select class="form-select" name="status" id="statusSelect" required>
+        <div class="xl:col-span-3">
+          <label class="label-field">Status</label>
+          <select class="select-field" name="status" id="statusSelect" required>
             <option value="nao pago">Não pago</option>
             <option value="pago parcial">Pago parcial</option>
             <option value="pago">Pago</option>
           </select>
         </div>
-        <div class="col-lg-2 col-md-4">
-          <label class="form-label">Moeda</label>
-          <select class="form-select" name="currency">
+        <div class="xl:col-span-2">
+          <label class="label-field">Moeda</label>
+          <select class="select-field" name="currency">
             <option>BRL</option><option>USD</option><option>EUR</option>
           </select>
         </div>
-        <div class="col-lg-4 col-md-8">
-          <label class="form-label">Código de reserva (PNR)</label>
-          <input id="pnr_code" class="form-control" name="pnr_code" placeholder="ABC123">
+        <div class="xl:col-span-3">
+          <label class="label-field">Código de reserva (PNR)</label>
+          <input id="pnr_code" class="input-field" name="pnr_code" placeholder="ABC123">
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Data de viagem</label>
-          <input type="date" class="form-control" name="travel_date">
+        <div class="xl:col-span-2">
+          <label class="label-field">Data de viagem</label>
+          <input type="date" class="select-field" name="travel_date">
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Âmbito</label>
-          <select class="form-select" name="scope">
+        <div class="xl:col-span-2">
+          <label class="label-field">Âmbito</label>
+          <select class="select-field" name="scope">
             <option value="nacional">Nacional</option>
             <option value="internacional">internacional</option>
           </select>
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Assinatura / carimbo</label>
-          <label class="form-check form-switch mt-2">
-            <input class="form-check-input" type="checkbox" name="show_signature" value="1" checked>
-            <span class="form-check-label">Mostrar na impressão</span>
+        <div class="xl:col-span-3">
+          <label class="label-field">Assinatura / carimbo</label>
+          <label class="switch-item mt-1">
+            <input type="checkbox" name="show_signature" value="1" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">Mostrar na impressão</span>
           </label>
         </div>
       </div>
-      <hr class="my-4">
-      <div class="row g-3">
-        <div class="col-12">
-          <h4 class="card-title mb-0">Resumo Financeiro</h4>
+
+      <hr class="my-5 border-ink-100">
+
+      <h4 class="mb-3 text-sm font-bold text-ink-950">Resumo Financeiro</h4>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <label class="label-field">Valor pago no serviço</label>
+          <input class="input-field" name="service_paid" id="servicePaid" value="0,00" readonly>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Valor pago no serviço</label>
-          <input class="form-control" name="service_paid" id="servicePaid" value="0,00" readonly>
+        <div>
+          <label class="label-field">Total Pago</label>
+          <input class="input-field" id="totalPago" value="R$ 0,00" disabled>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Total Pago</label>
-          <input class="form-control" id="totalPago" value="R$ 0,00" disabled>
+        <div>
+          <label class="label-field">Total do Cliente</label>
+          <input class="input-field" id="totalCliente" value="R$ 0,00" disabled>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Total do Cliente</label>
-          <input class="form-control" id="totalCliente" value="R$ 0,00" disabled>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Margem/Lucro</label>
-          <input class="form-control" id="margem" value="R$ 0,00" disabled>
+        <div>
+          <label class="label-field">Margem/Lucro</label>
+          <input class="input-field" id="margem" value="R$ 0,00" disabled>
         </div>
       </div>
 
@@ -650,37 +598,38 @@ require __DIR__ . '/../inc/header.php';
   </div>
 
   <!-- Aéreo -->
-  <div class="card">
-    <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Aéreo</h3>
-      <div class="ms-auto btn-list">
-        <button type="button" id="dupTrip" class="btn btn-outline-secondary">
-          <i class="ti ti-copy"></i> Duplicar último aéreo
+  <div class="card overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Aéreo</h3>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" id="dupTrip" class="btn-soft">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Duplicar último aéreo
         </button>
-        <button type="button" id="addTrip" class="btn btn-outline-primary">
-          <i class="ti ti-plus"></i> Adicionar aéreo
+        <button type="button" id="addTrip" class="btn-primary">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          Adicionar aéreo
         </button>
       </div>
     </div>
-    <div class="card-body">
+    <div class="p-5">
       <div id="tripsContainer"></div>
     </div>
   </div>
 
   <!-- Serviços adicionais -->
-  <div class="card">
-    <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Serviços adicionais</h3>
-      <div class="ms-auto btn-list">
-        <button type="button" id="addAux" class="btn btn-outline-primary">
-          <i class="ti ti-plus"></i> Adicionar serviço
-        </button>
-      </div>
+  <div class="card overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
+      <h3 class="text-sm font-bold text-ink-950">Serviços adicionais</h3>
+      <button type="button" id="addAux" class="btn-primary">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        Adicionar serviço
+      </button>
     </div>
-    <div class="card-body">
+    <div class="p-5">
       <div id="auxServicesContainer"></div>
-      <div class="d-flex justify-content-end mt-3">
-        <div class="fw-bold">Total Serviços: <span id="sumAux">R$ 0,00</span></div>
+      <div class="mt-4 flex justify-end">
+        <div class="text-sm font-bold text-ink-950">Total Serviços: <span id="sumAux">R$ 0,00</span></div>
       </div>
     </div>
   </div>
@@ -688,19 +637,21 @@ require __DIR__ . '/../inc/header.php';
   <input type="hidden" name="csrf" value="<?= htmlspecialchars($token) ?>">
   <input type="hidden" name="is_draft" id="is_draft" value="">
 
-  <div class="d-flex justify-content-end mb-4 gap-2">
-    <button type="button" id="refreshLists" class="btn btn-outline-secondary">
-      <i class="ti ti-refresh"></i> Atualizar listas
-    </button>
-    <a href="/sales/index.php" class="btn">Cancelar</a>
-    <button class="btn btn-secondary" type="button" id="btnDraft">
-      <i class="ti ti-notes"></i> Salvar rascunho
-    </button>
-    <button class="btn btn-primary" type="submit" id="btnSave">
-      <i class="ti ti-device-floppy me-1"></i> Salvar
-    </button>
+  <div class="sticky bottom-4 z-30 rounded-2xl border border-ink-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <button type="button" id="refreshLists" class="btn-ghost">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        Atualizar listas
+      </button>
+      <a href="/sales/index.php" class="btn-ghost">Cancelar</a>
+      <button class="btn-soft" type="button" id="btnDraft">Salvar rascunho</button>
+      <button class="btn-primary px-6" type="submit" id="btnSave">Salvar</button>
+    </div>
   </div>
 </form>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -820,14 +771,14 @@ document.addEventListener('DOMContentLoaded', function(){
 	  function buildAirlineSelect(val){
 	    const safeVal = escapeAttr(val || '');
 	    if (!window.K_LISTS.airlines.length) {
-	      return `<input name="s_airline[]" class="form-control s_airline" placeholder="LA – LATAM" value="${safeVal}">`;
+	      return `<input name="s_airline[]" class="input-field s_airline" placeholder="LA – LATAM" value="${safeVal}">`;
 	    }
 	    let opts = `<option value=""></option>`;
 	    window.K_LISTS.airlines.forEach(a=>{
 	      const v = `${a.code} – ${a.label}`;
 	      opts += `<option value="${escapeAttr(v)}" ${v===val?'selected':''}>${escapeHtml(v)}</option>`;
 	    });
-	    return `<select name="s_airline[]" class="form-select s_airline">${opts}</select>`;
+	    return `<select name="s_airline[]" class="select-field s_airline">${opts}</select>`;
 	  }
 
   function airlineValue(airline){
@@ -856,20 +807,20 @@ document.addEventListener('DOMContentLoaded', function(){
 	  function buildClassSelect(val){
 	    const safeVal = escapeAttr(val || '');
 	    if (!window.K_LISTS.classes.length) {
-	      return `<input name="s_class[]" class="form-control s_class" placeholder="Y / J / ..." value="${safeVal}">`;
+	      return `<input name="s_class[]" class="input-field s_class" placeholder="Y / J / ..." value="${safeVal}">`;
 	    }
 	    let opts = `<option value=""></option>`;
 	    window.K_LISTS.classes.forEach(c => { opts += `<option value="${escapeAttr(c)}" ${c===val?'selected':''}>${escapeHtml(c)}</option>`; });
-	    return `<select name="s_class[]" class="form-select s_class">${opts}</select>`;
+	    return `<select name="s_class[]" class="select-field s_class">${opts}</select>`;
 	  }
 	  function buildBagSelect(val){
 	    const safeVal = escapeAttr(val || '');
 	    if (!window.K_LISTS.baggage.length) {
-	      return `<input name="s_bag[]" class="form-control s_bag" placeholder="1PC / 23KG" value="${safeVal}">`;
+	      return `<input name="s_bag[]" class="input-field s_bag" placeholder="1PC / 23KG" value="${safeVal}">`;
 	    }
 	    let opts = `<option value=""></option>`;
 	    window.K_LISTS.baggage.forEach(b => { opts += `<option value="${escapeAttr(b)}" ${b===val?'selected':''}>${escapeHtml(b)}</option>`; });
-	    return `<select name="s_bag[]" class="form-select s_bag">${opts}</select>`;
+	    return `<select name="s_bag[]" class="select-field s_bag">${opts}</select>`;
 	  }
 
 	  function buildSupplierOptions(value){
@@ -880,7 +831,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function buildSupplierSelect(value){
     const opts = buildSupplierOptions(value);
-    return `<select class="form-select trip_supplier" name="trip_supplier_id[]">${opts}</select>`;
+    return `<select class="select-field trip_supplier" name="trip_supplier_id[]">${opts}</select>`;
   }
 
 	  function initSupplierSelect(sel){
@@ -918,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function buildPassengerSelect(value){
     const val = (value || '').toString().toUpperCase();
-    return `<select name="p_name[]" class="form-select p_name">${buildPassengerOptions(val)}</select>`;
+    return `<select name="p_name[]" class="select-field p_name">${buildPassengerOptions(val)}</select>`;
   }
 
   function initPassengerSelect(sel){
@@ -1016,87 +967,90 @@ document.addEventListener('DOMContentLoaded', function(){
 	    card.dataset.tripNo = String(tripCounter);
     card.innerHTML = `
 	      <input type="hidden" class="trip-no-input" name="trip_no[]" value="${tripCounter}">
-	      <div class="d-flex align-items-center gap-2 mb-3">
+	      <div class="mb-3 flex flex-wrap items-center gap-2">
 	        <div class="trip-title">Aéreo ${tripCounter}</div>
-	        <div class="ms-auto btn-list">
-	          <button type="button" class="btn btn-sm btn-outline-danger removeTrip"><i class="ti ti-trash"></i> Remover aéreo</button>
+	        <div class="ml-auto">
+	          <button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 removeTrip">Remover aéreo</button>
 	        </div>
 	      </div>
-      <div class="row g-3 mb-3">
-        <div class="col-lg-4 col-md-6">
-          <label class="form-label">Fornecedor</label>
+      <div class="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-3">
+          <label class="label-field">Fornecedor</label>
           ${buildSupplierSelect(data.supplier_id || '')}
         </div>
-	        <div class="col-lg-4 col-md-6">
-	          <label class="form-label">Código de reserva (PNR)</label>
-	          <input class="form-control trip-pnr" name="trip_pnr[]" placeholder="ABC123" value="${tripPnrValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Código de reserva (PNR)</label>
+	          <input class="input-field trip-pnr" name="trip_pnr[]" placeholder="ABC123" value="${tripPnrValue}">
 	        </div>
-	        <div class="col-lg-4 col-md-6">
-	          <label class="form-label">Data de viagem</label>
-	          <input type="date" class="form-control trip-travel-date" name="trip_travel_date[]" value="${tripDateValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Data de viagem</label>
+	          <input type="date" class="select-field trip-travel-date" name="trip_travel_date[]" value="${tripDateValue}">
 	        </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Tarifa (Fornecedor)</label>
-	          <input class="form-control trip_supplier_tarifa" name="trip_supplier_tarifa[]" value="${tripTarifaValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Tarifa (Fornecedor)</label>
+	          <input class="input-field trip_supplier_tarifa" name="trip_supplier_tarifa[]" value="${tripTarifaValue}">
 	        </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Comissão (Fornecedor)</label>
-	          <input class="form-control trip_supplier_comissao" name="trip_supplier_comissao[]" value="${tripComissaoValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Comissão (Fornecedor)</label>
+	          <input class="input-field trip_supplier_comissao" name="trip_supplier_comissao[]" value="${tripComissaoValue}">
 	        </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Valor pago ao fornecedor</label>
-          <input class="form-control trip_supplier_liquid" value="R$ 0,00" disabled>
+        <div class="xl:col-span-3">
+          <label class="label-field">Valor pago ao fornecedor</label>
+          <input class="input-field trip_supplier_liquid" value="R$ 0,00" disabled>
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Fornecedor pago?</label>
-          <label class="form-check form-switch mt-2">
-            <input class="form-check-input trip_supplier_paid" type="checkbox" name="trip_supplier_paid[]" value="${tripCounter}" ${data.supplier_paid ? 'checked' : ''}>
-            <span class="form-check-label">Sim</span>
+        <div class="xl:col-span-3">
+          <label class="label-field">Fornecedor pago?</label>
+          <label class="switch-item mt-1">
+            <input class="trip_supplier_paid" type="checkbox" name="trip_supplier_paid[]" value="${tripCounter}" ${data.supplier_paid ? 'checked' : ''}>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">Sim</span>
           </label>
         </div>
-        <div class="col-lg-6 col-md-12">
-          <label class="form-label">Reembolso</label>
-          <div class="form-selectgroup">
-            <label class="form-selectgroup-item">
-              <input type="radio" name="trip_refund_rule_${tripCounter}" value="nao reembolsavel" class="form-selectgroup-input trip_refund_rule" ${(data.refund_rule || 'nao reembolsavel') === 'nao reembolsavel' ? 'checked' : ''}>
-              <span class="form-selectgroup-label">Não reembolsável</span>
-            </label>
-            <label class="form-selectgroup-item">
-              <input type="radio" name="trip_refund_rule_${tripCounter}" value="multa" class="form-selectgroup-input trip_refund_rule" ${data.refund_rule === 'multa' ? 'checked' : ''}>
-              <span class="form-selectgroup-label">Permitido com multa</span>
-            </label>
-            <label class="form-selectgroup-item">
-              <input type="radio" name="trip_refund_rule_${tripCounter}" value="reembolso total" class="form-selectgroup-input trip_refund_rule" ${data.refund_rule === 'reembolso total' ? 'checked' : ''}>
-              <span class="form-selectgroup-label">Reembolso total</span>
-            </label>
-          </div>
-        </div>
-        <div class="col-lg-6 col-md-12">
-          <label class="form-label">Alteração</label>
-          <div class="form-selectgroup">
-            <label class="form-selectgroup-item">
-              <input type="radio" name="trip_change_rule_${tripCounter}" value="nao permite" class="form-selectgroup-input trip_change_rule" ${(data.change_rule || 'nao permite') === 'nao permite' ? 'checked' : ''}>
-              <span class="form-selectgroup-label">Não permite alteração</span>
-            </label>
-            <label class="form-selectgroup-item">
-              <input type="radio" name="trip_change_rule_${tripCounter}" value="sem multa" class="form-selectgroup-input trip_change_rule" ${data.change_rule === 'sem multa' ? 'checked' : ''}>
-              <span class="form-selectgroup-label">Alteração sem multa</span>
-            </label>
-          </div>
-        </div>
       </div>
+	      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+	        <div>
+	          <label class="label-field">Reembolso</label>
+	          <div class="rule-group">
+	            <label class="rule-radio">
+	              <input type="radio" name="trip_refund_rule_${tripCounter}" value="nao reembolsavel" class="trip_refund_rule" ${(data.refund_rule || 'nao reembolsavel') === 'nao reembolsavel' ? 'checked' : ''}>
+	              <span>Não reembolsável</span>
+	            </label>
+	            <label class="rule-radio">
+	              <input type="radio" name="trip_refund_rule_${tripCounter}" value="multa" class="trip_refund_rule" ${data.refund_rule === 'multa' ? 'checked' : ''}>
+	              <span>Permitido com multa</span>
+	            </label>
+	            <label class="rule-radio">
+	              <input type="radio" name="trip_refund_rule_${tripCounter}" value="reembolso total" class="trip_refund_rule" ${data.refund_rule === 'reembolso total' ? 'checked' : ''}>
+	              <span>Reembolso total</span>
+	            </label>
+	          </div>
+	        </div>
+	        <div>
+	          <label class="label-field">Alteração</label>
+	          <div class="rule-group">
+	            <label class="rule-radio">
+	              <input type="radio" name="trip_change_rule_${tripCounter}" value="nao permite" class="trip_change_rule" ${(data.change_rule || 'nao permite') === 'nao permite' ? 'checked' : ''}>
+	              <span>Não permite alteração</span>
+	            </label>
+	            <label class="rule-radio">
+	              <input type="radio" name="trip_change_rule_${tripCounter}" value="sem multa" class="trip_change_rule" ${data.change_rule === 'sem multa' ? 'checked' : ''}>
+	              <span>Alteração sem multa</span>
+	            </label>
+	          </div>
+	        </div>
+	      </div>
 	      <div class="trip-subsection">
 	        <div class="trip-subsection-title">Passageiros</div>
-	        <button type="button" class="btn btn-sm btn-outline-primary addPassengerTrip"><i class="ti ti-user-plus"></i> Adicionar passageiro</button>
+	        <button type="button" class="btn-xs btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 addPassengerTrip">+ Adicionar passageiro</button>
 	      </div>
 	      <div class="trip-table-wrap mb-3">
-	        <table class="table passengersTable">
+	        <table class="table-modern min-w-[900px] passengersTable">
           <thead>
             <tr>
               <th>Passageiro</th>
               <th style="width:120px">Tipo</th>
               <th>Nº bilhete</th>
-              <th style="width:160px">Valor</th>
+              <th style="width:170px">Valor</th>
               <th style="width:110px"></th>
             </tr>
           </thead>
@@ -1105,13 +1059,13 @@ document.addEventListener('DOMContentLoaded', function(){
       </div>
 	      <div class="trip-subsection">
 	        <div class="trip-subsection-title">Segmentos</div>
-	        <div class="btn-list">
-	          <button type="button" class="btn btn-sm btn-outline-primary addSegmentTrip"><i class="ti ti-plane"></i> Adicionar segmento</button>
-	          <button type="button" class="btn btn-sm btn-outline-secondary dupSegmentTrip"><i class="ti ti-copy"></i> Duplicar segmento</button>
+	        <div class="flex flex-wrap gap-2">
+	          <button type="button" class="btn-xs btn-soft border-brand-200 text-brand-700 hover:bg-brand-50 addSegmentTrip">+ Adicionar segmento</button>
+	          <button type="button" class="btn-xs btn-soft dupSegmentTrip">Duplicar segmento</button>
 	        </div>
 	      </div>
 	      <div class="trip-table-wrap">
-        <table class="table segmentsTable">
+        <table class="table-modern min-w-[1100px] segmentsTable">
           <thead>
             <tr>
               <th>Cia</th>
@@ -1148,7 +1102,6 @@ document.addEventListener('DOMContentLoaded', function(){
       refreshTripNumbers();
       window.recalcTotals();
     });
-
     (data.passengers || [{}]).forEach(p => addPassengerRow(card, p));
     (data.segments || [{}]).forEach(s => addSegmentRow(card, s));
     refreshTripNumbers();
@@ -1164,15 +1117,15 @@ document.addEventListener('DOMContentLoaded', function(){
 	    tr.innerHTML = `
 	      <td><input type="hidden" class="p_trip" name="p_trip[]" value="${tripNo}">${buildPassengerSelect(data.name || '')}</td>
       <td>
-        <select name="p_type[]" class="form-select p_type">
+        <select name="p_type[]" class="select-field p_type">
           <option value="ADT" ${data.type==='ADT'?'selected':''}>ADT</option>
           <option value="CHD" ${data.type==='CHD'?'selected':''}>CHD</option>
 	          <option value="INF" ${data.type==='INF'?'selected':''}>INF</option>
 	        </select>
 	      </td>
-	      <td><input name="p_ticket[]" class="form-control" placeholder="000-1234567890" value="${ticketValue}"></td>
-	      <td><input name="p_value[]" class="form-control p_value" placeholder="0,00" value="${valueValue}"></td>
-	      <td class="text-end"><button type="button" class="btn btn-outline-danger delRow"><i class="ti ti-trash"></i> Remover</button></td>
+	      <td><input name="p_ticket[]" class="input-field" placeholder="000-1234567890" value="${ticketValue}"></td>
+	      <td><input name="p_value[]" class="input-field p_value" placeholder="0,00" value="${valueValue}"></td>
+	      <td class="text-right"><button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 delRow">Remover</button></td>
 	    `;
     card.querySelector('.passengersTable tbody').appendChild(tr);
     const nameInp = tr.querySelector('.p_name');
@@ -1197,16 +1150,14 @@ document.addEventListener('DOMContentLoaded', function(){
 	    const locValue = escapeAttr(data.loc || '');
 	    tr.innerHTML = `
 	      <td><input type="hidden" class="s_trip" name="s_trip[]" value="${tripNo}">${buildAirlineSelect(data.airline||'')}</td>
-	      <td><input name="s_flight[]"  class="form-control s_flight" placeholder="LA1234" value="${flightValue}"></td>
-	      <td><textarea name="s_origin[]" class="form-control s_origin" rows="3" placeholder="BSB&#10;Terminal 1">${originValue}</textarea></td>
-	      <td><textarea name="s_dest[]" class="form-control s_dest" rows="3" placeholder="GRU&#10;Terminal 3">${destValue}</textarea></td>
+	      <td><input name="s_flight[]"  class="input-field s_flight" placeholder="LA1234" value="${flightValue}"></td>
+	      <td><textarea name="s_origin[]" class="input-field s_origin" rows="3" placeholder="BSB&#10;Terminal 1">${originValue}</textarea></td>
+	      <td><textarea name="s_dest[]" class="input-field s_dest" rows="3" placeholder="GRU&#10;Terminal 3">${destValue}</textarea></td>
 	      <td>${buildClassSelect(data.cls||'')}</td>
 	      <td>${buildBagSelect(data.bag||'')}</td>
-	      <td><input name="s_loc[]" class="form-control s_loc" placeholder="PNR/LOC" value="${locValue}"></td>
-      <td class="text-end">
-        <div class="btn-list justify-content-end">
-          <button type="button" class="btn btn-outline-danger delRow"><i class="ti ti-trash"></i> Remover</button>
-        </div>
+	      <td><input name="s_loc[]" class="input-field s_loc" placeholder="PNR/LOC" value="${locValue}"></td>
+      <td class="text-right">
+        <button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 delRow">Remover</button>
       </td>
     `;
     card.querySelector('.segmentsTable tbody').appendChild(tr);
@@ -1357,55 +1308,56 @@ document.addEventListener('DOMContentLoaded', function(){
     card.className = 'aux-service-card';
     card.dataset.auxNo = String(auxCounter);
     card.innerHTML = `
-      <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="mb-2 flex flex-wrap items-center gap-2">
         <div class="aux-service-title">Serviço ${auxCounter}</div>
-        <div class="ms-auto btn-list">
-          <button type="button" class="btn btn-sm btn-outline-danger removeAuxService"><i class="ti ti-trash"></i> Remover serviço</button>
+        <div class="ml-auto">
+          <button type="button" class="btn-xs btn-soft border-red-200 text-red-700 hover:bg-red-50 removeAuxService">Remover serviço</button>
         </div>
       </div>
-      <div class="row g-3">
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Tipo</label>
-          <select class="form-select aux_type" name="aux_type[]">${buildAuxTypeOptions(data.type || 'other')}</select>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-3">
+          <label class="label-field">Tipo</label>
+          <select class="select-field aux_type" name="aux_type[]">${buildAuxTypeOptions(data.type || 'other')}</select>
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label">Fornecedor</label>
-          <select class="form-select aux_supplier" name="aux_supplier_id[]">${buildAuxSupplierOptions(data.supplier_id || '')}</select>
+        <div class="xl:col-span-3">
+          <label class="label-field">Fornecedor</label>
+          <select class="select-field aux_supplier" name="aux_supplier_id[]">${buildAuxSupplierOptions(data.supplier_id || '')}</select>
         </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Código / Reserva</label>
-	          <input name="aux_code[]" class="form-control aux_code" placeholder="RES / VOUCHER" value="${auxCodeValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Código / Reserva</label>
+	          <input name="aux_code[]" class="input-field aux_code" placeholder="RES / VOUCHER" value="${auxCodeValue}">
 	        </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Serviço</label>
-	          <input name="aux_service[]" class="form-control aux_service" value="${auxServiceValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Serviço</label>
+	          <input name="aux_service[]" class="input-field aux_service" value="${auxServiceValue}">
 	        </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Data inicial</label>
-	          <input type="date" name="aux_start_date[]" class="form-control" value="${auxStartValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Data inicial</label>
+	          <input type="date" name="aux_start_date[]" class="select-field" value="${auxStartValue}">
 	        </div>
-	        <div class="col-lg-3 col-md-6">
-	          <label class="form-label">Data final</label>
-	          <input type="date" name="aux_end_date[]" class="form-control" value="${auxEndValue}">
+	        <div class="xl:col-span-3">
+	          <label class="label-field">Data final</label>
+	          <input type="date" name="aux_end_date[]" class="select-field" value="${auxEndValue}">
 	        </div>
-	        <div class="col-lg-2 col-md-4">
-	          <label class="form-label">Valor cliente</label>
-	          <input name="aux_value[]" class="form-control aux_value" placeholder="0,00" value="${auxValueValue}">
+	        <div class="xl:col-span-2">
+	          <label class="label-field">Valor cliente</label>
+	          <input name="aux_value[]" class="input-field aux_value" placeholder="0,00" value="${auxValueValue}">
 	        </div>
-	        <div class="col-lg-2 col-md-4">
-	          <label class="form-label">Custo fornecedor</label>
-	          <input name="aux_cost[]" class="form-control aux_cost" placeholder="0,00" value="${auxCostValue}">
+	        <div class="xl:col-span-2">
+	          <label class="label-field">Custo fornecedor</label>
+	          <input name="aux_cost[]" class="input-field aux_cost" placeholder="0,00" value="${auxCostValue}">
         </div>
-        <div class="col-lg-2 col-md-4">
-          <label class="form-label">Fornecedor pago?</label>
-          <label class="form-check form-switch mt-2">
-            <input class="form-check-input aux_paid" type="checkbox" name="aux_paid[]" value="${auxCounter}" ${data.paid ? 'checked' : ''}>
-            <span class="form-check-label">Sim</span>
+        <div class="xl:col-span-2">
+          <label class="label-field">Fornecedor pago?</label>
+          <label class="switch-item mt-1">
+            <input class="aux_paid" type="checkbox" name="aux_paid[]" value="${auxCounter}" ${data.paid ? 'checked' : ''}>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">Sim</span>
           </label>
         </div>
-	        <div class="col-12">
-	          <label class="form-label">Detalhes</label>
-	          <textarea name="aux_details[]" class="form-control aux_details" rows="3">${auxDetailsValue}</textarea>
+	        <div class="xl:col-span-12">
+	          <label class="label-field">Detalhes</label>
+	          <textarea name="aux_details[]" class="input-field aux_details" rows="3">${auxDetailsValue}</textarea>
 	        </div>
       </div>
     `;
@@ -1454,7 +1406,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     if (invalid) {
       e.preventDefault();
-      btnSave.disabled = false; btnSave.innerHTML = '<i class="ti ti-device-floppy me-1"></i> Salvar';
+      btnSave.disabled = false; btnSave.innerHTML = 'Salvar';
       btnDraft.disabled = false;
       alert('أكمل الحقول (Número do voo + Origem + Destino) أو اترك الصف فارغًا بالكامل.');
     }
@@ -1550,5 +1502,6 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 </script>
-
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

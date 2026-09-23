@@ -95,6 +95,10 @@
          px-2.5 py-1.5 text-xs font-semibold text-ink-700 transition hover:bg-ink-50
          focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-500/20;
 }
+@utility btn-xs {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold
+         transition focus:outline-none;
+}
 @utility btn-flex {
   @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold
          transition focus:outline-none focus-visible:ring-2;
@@ -155,6 +159,45 @@
   .badge-soft {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
   }
+
+  /* ---- Vendas create/edit form ---- */
+  .trip-card, .aux-service-card {
+    @apply rounded-2xl border border-ink-200 bg-white p-5;
+  }
+  .trip-card + .trip-card, .aux-service-card + .aux-service-card { @apply mt-4; }
+  .trip-title, .aux-service-title { @apply text-sm font-bold text-ink-950; }
+  .trip-subsection { @apply mb-1 mt-4 flex items-center justify-between gap-3; }
+  .trip-subsection-title { @apply text-xs font-bold uppercase tracking-wider text-ink-500; }
+  .trip-table-wrap { @apply overflow-x-auto; }
+  .trip-empty {
+    @apply rounded-xl border border-dashed border-ink-300 px-5 py-6 text-center text-sm text-ink-400;
+  }
+  .is-invalid { border-color: #f87171 !important; background-color: rgb(254 242 242 / 0.6) !important; }
+
+  /* toggle switch */
+  .switch-item { @apply inline-flex cursor-pointer select-none items-center gap-2 py-1; }
+  .switch-item > input { @apply sr-only; }
+  .switch-track { @apply relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-ink-200 transition; }
+  .switch-thumb { @apply inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform; }
+  .switch-item > input:checked + .switch-track { @apply bg-emerald-500; }
+  .switch-item > input:checked + .switch-track .switch-thumb { @apply translate-x-[18px]; }
+  .switch-text { @apply text-sm text-ink-700; }
+
+  /* segmented rule radios (reembolso/alteração) */
+  .rule-group { @apply flex flex-wrap gap-1.5; }
+  .rule-radio { @apply inline-flex; }
+  .rule-radio input { @apply sr-only; }
+  .rule-radio span {
+    @apply inline-flex cursor-pointer select-none items-center rounded-lg border border-ink-200 bg-white
+           px-3 py-1.5 text-xs font-semibold text-ink-600 transition hover:border-brand-300;
+  }
+  .rule-radio input:checked + span { @apply border-brand-400 bg-brand-50 text-brand-700; }
+
+  /* TomSelect z-index over cards */
+  .ts-wrapper { position: relative; z-index: 20; }
+  .ts-wrapper.dropdown-active { z-index: 3000; }
+  .ts-dropdown { z-index: 9999 !important; }
+  .ts-dropdown .ts-dropdown-content { max-height: 240px; }
 
   /* Copyable cells (clients) */
   .copyable {
