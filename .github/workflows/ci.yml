@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests + build + HTTP smoke
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: kamaltur_test
+          MYSQL_USER: pos_ci
+          MYSQL_PASSWORD: pos_ci_pass
+          MYSQL_ROOT_PASSWORD: root_ci_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -proot_ci_pass --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_NAME: kamaltur_test
+      DB_USER: pos_ci
+      DB_PASS: pos_ci_pass
+      PUBLIC_LINK_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql, mbstring
+          coverage: none
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: PHP lint (all application files)
+        run: |
+          find . -name '*.php' \
+            -not -path './vendor/*' \
+            -not -path './node_modules/*' \
+            -not -path './frontend/*' \
+            -print0 | xargs -0 -n1 php -l
+
+      - name: Apply migrations (fresh test DB)
+        run: php bin/migrate.php
+
+      - name: Seed test DB
+        run: php local-setup/seed.php
+
+      - name: Pest unit/feature tests
+        run: vendor/bin/pest
+
+      - name: Static smoke tests
+        run: php tests/smoke.php
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build assets (Vite + Tailwind)
+        run: npm run build
+        working-directory: frontend
+
+      - name: HTTP smoke (login + page sweep)
+        run: |
+          php -S 127.0.0.1:8080 -t . local-setup/router.php >/tmp/php-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://127.0.0.1:8080/login.php; then break; fi
+            sleep 1
+          done
+          bash tests/http-smoke.sh || { echo '--- php server log ---'; cat /tmp/php-server.log; exit 1; }

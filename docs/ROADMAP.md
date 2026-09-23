@@ -53,10 +53,13 @@
 
 | 2026-09-23 | **اختبارات Pest 4** (المرحلة 3a): `composer require --dev pestphp/pest` + scaffold + `Kamaltur\Money` (هامش/moeda) + اختبارات helpers/auth (CSRF + roles + agency scope) + InvoicesLib (رقم الفاتورة داخل transaction بـ ROLLBACK) — **20 passed (70 assertions)** | 3 |
 | 2026-09-23 | استخراج حساب الهامش لـ `src/Money.php` واستخدامه في `sales/create.php` + `sales/edit.php` (نفس الصيغة بالظبط — سلوك مطابق) + `composer test` بتشغّل smoke ثم pest | 3 |
+| 2026-09-23 | **CI (المرحلة 3b)**: `.github/workflows/ci.yml` (PHP 8.3 + MySQL 8 service + lint + migrations + seed + Pest + smoke + Vite build + HTTP smoke) + `tests/http-smoke.sh` (login حقيقي + 12 صفحة — بيتعاد استخدامه محليًا بـ `composer test:http`) | 3 |
 
 **نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع).
 
-**المرحلة 3a (اختبارات Pest) مكتملة ✅**: 20 اختبار نجحوا (70 assertions) — التغطية: رقم الفاتورة (YY#### + incremental + ROLLBACK) + الهامش (الصيغة الدقيقة) + CSRF (valid/invalid/null/stability) + roles + multi-tenancy scope + helpers (brl/date/status). التالي: 3b (GitHub Actions CI) ثم 3c (deploy تلقائي لـ Hostinger).
+**المرحلة 3a (اختبارات Pest) مكتملة ✅**: 20 اختبار نجحوا (70 assertions) — التغطية: رقم الفاتورة (YY#### + incremental + ROLLBACK) + الهامش (الصيغة الدقيقة) + CSRF (valid/invalid/null/stability) + roles + multi-tenancy scope + helpers (brl/date/status).
+
+**المرحلة 3b (CI — GitHub Actions) مكتملة ✅**: `.github/workflows/ci.yml` على كل push/PR — PHP 8.3 + MySQL 8 service (DB جديدة `kamaltur_test`) → composer install + `php -l` لكل الملفات + migrations + seed + Pest + smoke + `npm ci` + build Vite + **HTTP smoke** (`tests/http-smoke.sh`: login حقيقي + مسح 12 صفحة على الـ shell الجديد). التالي: 3c (deploy تلقائي لـ Hostinger — يحتاج GitHub Secrets من عندك).
 
 ---
 
@@ -123,7 +126,7 @@
 
 ### المرحلة 3 — الجودة و CI/CD (أسبوع)
 - ✅ **Pest**: توليد رقم الفاتورة، حساب الهامش، عزل الـ multi-tenancy، الـ CSRF (+helpers +roles) — 20 اختبار أخضر.
-- ⏳ **GitHub Actions**: تشغيل الاختبارات (Pest + smoke + بناء الـ assets تلقائياً) — يحتاج MySQL service container للاختبارات الـ Feature.
+- ✅ **GitHub Actions** (`.github/workflows/ci.yml`): PHP 8.3 + MySQL 8 service + lint كل الملفات + migrations + seed + Pest + smoke + بناء Vite + HTTP smoke على كل push/PR.
 - ⏳ **Deploy تلقائي لـ Hostinger** عند push على `main` — يحتاج GitHub Secrets (SSH host/user/key من عند المستخدم).
 
 ### المرحلة 4 — ميزات جديدة فوق القاعدة الحديثة (متواصلة)
