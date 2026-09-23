@@ -20,9 +20,14 @@
 | 2026-09-23 | Layout تطبيق جديد (`inc/layout.php`: سايد بار داكن + توب بار) | 2 |
 | 2026-09-23 | **Dashboard** محوّل (KPIs + رسم شهري + donut reembolsos + جداول) | 2 |
 | 2026-09-23 | **Vendas** (`sales/index.php`) محوّلة (فلاتر + sort + PNR copy + Mark Pago AJAX) | 2 |
-| 2026-09-23 | Demo data seeder (`local-setup/seed-demo-data.php`) | — |
+| 2026-09-23 | **Clientes** (`clients/index.php`) محوّلة (بحث + فلاتر + نسخ بالضغط) | 2 |
+| 2026-09-23 | **Fornecedores** (`suppliers/index.php`) محوّلون | 2 |
+| 2026-09-23 | **Reembolsos** (`refunds/index.php`) محوّلة (فلاتر status + badges ملوّنة) | 2 |
+| 2026-09-23 | **Relatórios** (`reports/index.php`) محوّلة (KPIs + Chart.js بألوان الـ brand) | 2 |
+| 2026-09-23 | **Configurações** (`settings/index.php`) محوّلة (شبكة بطاقات إجراءات) | 2 |
+| 2026-09-23 | Demo data seeder (`local-setup/seed-demo-data.php`) + إصلاح باگ إدراج العملاء | — |
 
-**المتبقي في المرحلة 2**: Clientes, Fornecedores, Reembolsos, Relatórios, Configurações, Master dashboard, ثم المرحلة 3 (اختبارات/CI).
+**المتبقي في المرحلة 2**: Master dashboard (`master/dashboard.php` — لسه على الـ layout القديم مؤقتاً)، صفحات داخلية (create/show/edit للـ sales/clients...)، ثم المرحلة 3 (اختبارات/Pest + CI + نشر تلقائي Hostinger).
 
 ---
 
