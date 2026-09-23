@@ -208,4 +208,15 @@
            px-1.5 py-0.5 text-[10px] font-bold whitespace-nowrap text-white shadow-md;
   }
   .is-hidden { display: none; }
+
+  /* Trabalha Na — vanilla autocomplete (replaces jQuery UI) */
+  .autocomplete-wrap { @apply relative; }
+  .autocomplete-box {
+    @apply absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-auto rounded-xl
+           border border-ink-200 bg-white py-1 shadow-lg;
+  }
+  .autocomplete-item {
+    @apply block w-full px-3 py-2 text-left text-sm text-ink-700 transition hover:bg-brand-50 hover:text-brand-700;
+  }
+  .autocomplete-empty { @apply px-3 py-2 text-sm text-ink-400; }
 }
