@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $total_amount = $passengers_total + $aux_total;      // Total do Cliente
     $supplier_paid_amount = $supplier_paid ? $supplier_liquid : 0.0;
     $total_paid   = $supplier_paid_amount + $service_paid;    // Total Pago
-    $margin_value = $total_amount - $total_paid;              // Margem/Lucro
+    $margin_value = \Kamaltur\Money::margin((float)$total_amount, (float)$total_paid);    // Margem/Lucro
     $amount_paid  = $inv['amount_paid'] ?? 0;
 
     // 4) salvar em transação

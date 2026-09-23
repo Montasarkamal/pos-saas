@@ -51,7 +51,12 @@
 | 2026-09-23 | **Nova Venda de Serviço** `services/create.php` محوّلة (لوحات حسب النوع + TomSelect + صفوف ضيوف/غرف ديناميكية — الـ redirect الأصلي لـ sales/create محفوظ) | 2 |
 | 2026-09-23 | **مسح شامل ختامي**: 33 صفحة — كل الصفحات على الـ shell القديم اتحوّلت (صفر refs لـ inc/header.php) — 200 + aside قبل main + صفر Tabler + field-name parity + smoke guard موسّع لـ 30 صفحة | 2 |
 
-**نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع). المتبقي: المرحلة 3 (اختبارات Pest + CI + نشر تلقائي Hostinger).
+| 2026-09-23 | **اختبارات Pest 4** (المرحلة 3a): `composer require --dev pestphp/pest` + scaffold + `Kamaltur\Money` (هامش/moeda) + اختبارات helpers/auth (CSRF + roles + agency scope) + InvoicesLib (رقم الفاتورة داخل transaction بـ ROLLBACK) — **20 passed (70 assertions)** | 3 |
+| 2026-09-23 | استخراج حساب الهامش لـ `src/Money.php` واستخدامه في `sales/create.php` + `sales/edit.php` (نفس الصيغة بالظبط — سلوك مطابق) + `composer test` بتشغّل smoke ثم pest | 3 |
+
+**نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع).
+
+**المرحلة 3a (اختبارات Pest) مكتملة ✅**: 20 اختبار نجحوا (70 assertions) — التغطية: رقم الفاتورة (YY#### + incremental + ROLLBACK) + الهامش (الصيغة الدقيقة) + CSRF (valid/invalid/null/stability) + roles + multi-tenancy scope + helpers (brl/date/status). التالي: 3b (GitHub Actions CI) ثم 3c (deploy تلقائي لـ Hostinger).
 
 ---
 
@@ -117,8 +122,9 @@
 - ✅ متجاوب كامل مع الموبايل (المستخدمين بتوع الوكالة بيفتحوا الموبايل كتير).
 
 ### المرحلة 3 — الجودة و CI/CD (أسبوع)
-- ✅ **Pest أو PHPUnit** للوحدات: توليد رقم الفاتورة، حساب الهامش، عزل الـ multi-tenancy، الـ CSRF.
-- ✅ **GitHub Actions**: تشغيل الاختبارات + بناء الـ assets تلقائياً، و**Deploy تلقائي لـ Hostinger** عند push على `main`.
+- ✅ **Pest**: توليد رقم الفاتورة، حساب الهامش، عزل الـ multi-tenancy، الـ CSRF (+helpers +roles) — 20 اختبار أخضر.
+- ⏳ **GitHub Actions**: تشغيل الاختبارات (Pest + smoke + بناء الـ assets تلقائياً) — يحتاج MySQL service container للاختبارات الـ Feature.
+- ⏳ **Deploy تلقائي لـ Hostinger** عند push على `main` — يحتاج GitHub Secrets (SSH host/user/key من عند المستخدم).
 
 ### المرحلة 4 — ميزات جديدة فوق القاعدة الحديثة (متواصلة)
 - Dashboards تفاعلية بالكامل مع فلاتر زمنية وحجز عملات.

@@ -13,16 +13,24 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Tests\\": "tests/",
             "Kamaltur\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "migrate": "php bin/migrate.php",
-        "test": "php tests/smoke.php",
+        "test": "php tests/smoke.php && vendor/bin/pest",
+        "test:unit": "vendor/bin/pest tests/Unit",
         "build": "npm --prefix frontend run build"
     },
     "config": {
         "optimize-autoloader": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^4.7"
     }
 }

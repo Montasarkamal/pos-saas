@@ -291,7 +291,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $total_paid   = $supplier_paid_amount + $service_paid;
 
     // Margem/Lucro
-$margin_value = $total_amount - $total_paid;
+$margin_value = \Kamaltur\Money::margin((float)$total_amount, (float)$total_paid);
 
     // 4) Persistência
     if (!$err) {
