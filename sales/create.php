@@ -1408,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', function(){
       e.preventDefault();
       btnSave.disabled = false; btnSave.innerHTML = 'Salvar';
       btnDraft.disabled = false;
-      alert('أكمل الحقول (Número do voo + Origem + Destino) أو اترك الصف فارغًا بالكامل.');
+      alert('Preencha os campos (Número do voo + Origem + Destino) ou deixe a linha totalmente vazia.');
     }
   });
 

@@ -25,9 +25,12 @@
 | 2026-09-23 | **Reembolsos** (`refunds/index.php`) محوّلة (فلاتر status + badges ملوّنة) | 2 |
 | 2026-09-23 | **Relatórios** (`reports/index.php`) محوّلة (KPIs + Chart.js بألوان الـ brand) | 2 |
 | 2026-09-23 | **Configurações** (`settings/index.php`) محوّلة (شبكة بطاقات إجراءات) | 2 |
+| 2026-09-23 | **Venda (detalhe)** `sales/show.php` محوّلة (البطاقات + AJAX status + نسخ PNR) | 2 |
+| 2026-09-23 | **Nova Venda** `sales/create.php` محوّلة بالكامل (trip cards + TomSelect + سويتشات + rule radios) | 2 |
+| 2026-09-23 | **Editar Venda** `sales/edit.php` محوّلة بالكامل | 2 |
 | 2026-09-23 | Demo data seeder (`local-setup/seed-demo-data.php`) + إصلاح باگ إدراج العملاء | — |
 
-**المتبقي في المرحلة 2**: Master dashboard (`master/dashboard.php` — لسه على الـ layout القديم مؤقتاً)، صفحات داخلية (create/show/edit للـ sales/clients...)، ثم المرحلة 3 (اختبارات/Pest + CI + نشر تلقائي Hostinger).
+**المتبقي في المرحلة 2**: صفحات كل الوحدات الداخلية (clients/suppliers/users create/show/edit)، Master dashboard (`master/dashboard.php` — لسه على الـ layout القديم)، صفحات الطباعة (print/tkt/recibo/voucher — تفضل standalone كوثائق طباعة)، ثم المرحلة 3 (اختبارات/Pest + CI + نشر تلقائي Hostinger).
 
 ---
 
