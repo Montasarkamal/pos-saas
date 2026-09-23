@@ -25,6 +25,12 @@
 1. **GitHub Secrets** (انظر الجدول أدناه — كل القيم معروفة ومذكورة في هذا الملف).
 2. **Variable** `DEPLOY_ENABLED = true` في GitHub.
 
+> ⚠️ **درس مهم (تم إصلاحه 2026-09-23)**: `assets/dist/` (مخرجات Vite) **مش متعقبة في git** (gitignored).
+> السحب اليدوي من hPanel Git **مش بيجيبها** — فالصفحات كانت بتترندر من غير CSS.
+> **الـ CI deploy بيعمل `npm run build` قبل rsync أوتوماتيك** — فمفيش مشكلة في المسار التلقائي.
+> لو سحبت يدويًا في أي وقت: شغّل `cd frontend && npm ci && npm run build` ثم ارفع `assets/dist/`
+> لمجلد `assets/` على السيرفر (نفس المسار بتاع `pos.kamaltur.com` فقط).
+
 ## إعداد لمرة واحدة
 
 ### 1) من لوحة Hostinger (hPanel)
