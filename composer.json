@@ -1,0 +1,28 @@
+{
+    "name": "kamaltur/pos",
+    "description": "KAMALTUR POS - travel operations and point-of-sale system",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kamaltur\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kamaltur\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "migrate": "php bin/migrate.php",
+        "test": "php tests/smoke.php",
+        "build": "npm --prefix frontend run build"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

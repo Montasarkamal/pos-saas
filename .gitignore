@@ -10,3 +10,12 @@
 /debug/
 /uploads/
 
+# Phase 0 — tooling artifacts
+/vendor/
+/node_modules/
+/frontend/node_modules/
+/frontend/dist/
+/assets/dist/
+/database/*.sqlite
+/composer.lock.tmp*
+
