@@ -1,6 +1,6 @@
 <?php
 /* =====================================================================
-   File: sales/show.php — عرض سهل وواضح + تواريخ DD/MM/YYYY دائمًا
+   File: sales/show.php — modern layout (Phase 2)
    - نفس آلية العمل (نفس الـ queries والحسابات)
    - تغيير الحالة عبر AJAX باستخدام /sales/update_status.php
    - تنسيق التاريخ دائمًا: 01/01/2026
@@ -12,6 +12,7 @@ require __DIR__ . '/../inc/auth.php'; require_login();
 require __DIR__ . '/../inc/db.php';
 require __DIR__ . '/../inc/invoices_lib.php';
 require_once __DIR__ . '/../inc/public_link.php';
+require_once __DIR__ . '/../inc/ui.php';
 
 header('Content-Type: text/html; charset=UTF-8');
 
@@ -91,13 +92,22 @@ function br_date($s){
 function render404($msg='Página não encontrada'){
   return '<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><title>404</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css"></head>
-  <body class="antialiased"><div class="container-xl py-6"><div class="empty">
-   <div class="empty-header">404</div>
-   <p class="empty-title">This Page Does Not Exist</p>
-   <p class="empty-subtitle text-secondary">'.e($msg).'</p>
-   <div class="empty-action"><a href="/sales/index.php" class="btn btn-primary">Voltar</a></div>
-  </div></div></body></html>';
+  <style>
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background:#f6f7fb; color:#1b2140; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .box{ text-align:center; padding:2rem; }
+    .big{ font-size:64px; font-weight:800; color:#6273f2; line-height:1; }
+    h1{ font-size:20px; margin:.5rem 0; }
+    p{ color:#525a73; margin:0 0 1.25rem; }
+    a{ display:inline-block; background:#6273f2; color:#fff; font-weight:600; text-decoration:none;
+       padding:.6rem 1.2rem; border-radius:10px; }
+  </style></head>
+  <body><div class="box">
+    <div class="big">404</div>
+    <h1>Página não encontrada</h1>
+    <p>'.e($msg).'</p>
+    <a href="/sales/index.php">Voltar</a>
+  </div></body></html>';
 }
 
 /* [F] CSRF */
@@ -125,287 +135,270 @@ $statusRaw = (string)($inv['status'] ?? '');
 $status = mb_strtolower(trim($statusRaw), 'UTF-8');
 if ($status === 'não pago') $status = 'nao pago';
 
-$badge = 'bg-secondary';
-if ($status==='pago') $badge='bg-success';
-elseif ($status==='pago parcial') $badge='bg-warning';
-elseif ($status==='nao pago') $badge='bg-danger';
-
-/* [J] header */
+/* [J] layout */
 $pageTitle = 'Venda #'.e($inv['invoice_number']);
-require __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
-
-<style>
-  .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
-  .info-grid{ display:grid; grid-template-columns: 1fr; gap: 10px; }
-  @media (min-width: 992px){
-    .info-grid{ grid-template-columns: 1fr 1fr 1fr; }
-  }
-  .info-box{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:12px;
-    padding:12px;
-    background:#fff;
-  }
-  .kv{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed rgba(0,0,0,.08); }
-  .kv:last-child{ border-bottom:0; }
-  .kv .k{ color: var(--tblr-muted); }
-  .kv .v{ font-weight:600; text-align:right; }
-  .section-title{ font-weight:700; margin: 8px 0 10px; }
-  .table thead th{ white-space:nowrap; }
-</style>
 
 <input type="hidden" id="csrfToken" value="<?= e($token) ?>">
 
-<!-- شريط علوي بسيط -->
-<div class="page-header d-print-none">
-  <div class="row align-items-center g-2">
-    <div class="col">
-      <div class="d-flex align-items-center gap-2">
-        <span class="avatar bg-azure-lt"><i class="ti ti-file-invoice"></i></span>
-        <div class="lh-sm">
-          <div class="text-muted small">Venda</div>
-          <div class="h2 m-0">
-            <span class="mono">#<?= e($inv['invoice_number']) ?></span>
-            <span class="badge text-white <?= e($badge) ?>" id="statusBadge" style="vertical-align:middle;">
-              <span id="statusText"><?= e(status_label($statusRaw)) ?></span>
+<!-- شريط علوي -->
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div class="min-w-0">
+        <a href="/sales/index.php" class="mb-2 inline-flex items-center gap-1 text-sm font-medium text-ink-500 transition hover:text-brand-600">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Voltar para a lista
+        </a>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <h2 class="font-mono text-xl font-bold text-ink-950">#<?= e($inv['invoice_number']) ?></h2>
+            <span class="badge-soft <?= ui_status_badge($status) ?>" id="statusBadge">
+                <span id="statusText"><?= e(ui_status_label($statusRaw)) ?></span>
             </span>
-          </div>
-          <div class="text-muted">
-            Cliente: <strong><?= e($inv['client_name'] ?? '—') ?></strong>
+        </div>
+        <p class="mt-1 text-sm text-ink-500">
+            Cliente: <strong class="text-ink-800"><?= e($inv['client_name'] ?? '—') ?></strong>
             <?php if (!empty($inv['pnr_code'])): ?>
-              &nbsp;•&nbsp; PNR: <span class="mono fw-semibold" id="pnrText"><?= e($inv['pnr_code']) ?></span>
-              <button type="button" class="btn btn-sm btn-ghost-secondary ms-1" id="btnCopyPnr" data-copy="<?= e($inv['pnr_code']) ?>">
-                <i class="ti ti-copy me-1"></i>Copiar
-              </button>
+                · PNR: <span class="font-mono font-semibold text-ink-800" id="pnrText"><?= e($inv['pnr_code']) ?></span>
+                <button type="button" class="btn-soft ml-1 border-brand-200 text-brand-700 hover:bg-brand-50" id="btnCopyPnr" data-copy="<?= e($inv['pnr_code']) ?>">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copiar
+                </button>
             <?php endif; ?>
-          </div>
-        </div>
-      </div>
+        </p>
     </div>
 
-    <div class="col-auto ms-auto">
-      <div class="btn-list">
-
-        <!-- Status واضح (AJAX) -->
-        <div class="d-flex align-items-center gap-2">
-          <select class="form-select" id="statusSelect" style="width:170px"
-                  data-id="<?= (int)$inv['id'] ?>" data-current="<?= e($status) ?>">
-            <option value="nao pago"     <?= $status==='nao pago'?'selected':'' ?>>Não pago</option>
-            <option value="pago parcial" <?= $status==='pago parcial'?'selected':'' ?>>Pago parcial</option>
-            <option value="pago"         <?= $status==='pago'?'selected':'' ?>>Pago</option>
-          </select>
-
-          <button class="btn btn-success" type="button" id="btnMarkPaid">
-            <i class="ti ti-check me-1"></i>Pago
-          </button>
+    <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2">
+            <select class="select-field w-[180px]" id="statusSelect"
+                    data-id="<?= (int)$inv['id'] ?>" data-current="<?= e($status) ?>">
+                <option value="nao pago"     <?= $status==='nao pago'?'selected':'' ?>>Não pago</option>
+                <option value="pago parcial" <?= $status==='pago parcial'?'selected':'' ?>>Pago parcial</option>
+                <option value="pago"         <?= $status==='pago'?'selected':'' ?>>Pago</option>
+            </select>
+            <button class="btn-primary px-4" type="button" id="btnMarkPaid">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Pago
+            </button>
         </div>
-
-        <a class="btn btn-outline-amber" href="/sales/edit.php?id=<?= (int)$inv['id'] ?>">
-          <i class="ti ti-edit me-1"></i>Editar
-        </a>
-        <a class="btn btn-outline-primary" href="<?= e($publicInvoiceUrl) ?>" target="_blank" rel="noopener">
-          <i class="ti ti-file-invoice me-1"></i>Venda
-        </a>
-        <a class="btn btn-outline-green" href="<?= e($publicVoucherUrl) ?>" target="_blank" rel="noopener">
-          <i class="ti ti-ticket me-1"></i>Voucher
-        </a>
-
-        <form action="/sales/delete.php" method="post" class="d-inline"
+        <a class="btn-soft border-amber-200 text-amber-700 hover:bg-amber-50" href="/sales/edit.php?id=<?= (int)$inv['id'] ?>">Editar</a>
+        <a class="btn-soft border-brand-200 text-brand-700 hover:bg-brand-50" href="<?= e($publicInvoiceUrl) ?>" target="_blank" rel="noopener">Venda</a>
+        <a class="btn-soft border-emerald-200 text-emerald-700 hover:bg-emerald-50" href="<?= e($publicVoucherUrl) ?>" target="_blank" rel="noopener">Voucher</a>
+        <form action="/sales/delete.php" method="post" class="m-0"
               onsubmit="return confirm('Excluir a venda #<?= e($inv['invoice_number']) ?>? Esta ação não pode ser desfeita e será registrada.');">
-          <input type="hidden" name="csrf" value="<?= e($token) ?>">
-          <input type="hidden" name="id" value="<?= (int)$inv['id'] ?>">
-          <button class="btn btn-outline-red"><i class="ti ti-trash me-1"></i>Excluir</button>
+            <input type="hidden" name="csrf" value="<?= e($token) ?>">
+            <input type="hidden" name="id" value="<?= (int)$inv['id'] ?>">
+            <button class="btn-soft border-red-200 text-red-700 hover:bg-red-50">Excluir</button>
         </form>
-
-        <a class="btn" href="/sales/index.php"><i class="ti ti-arrow-left me-1"></i>Voltar</a>
-      </div>
     </div>
-  </div>
 </div>
 
-<!-- معلومات أساسية (3 صناديق واضحة) -->
-<div class="info-grid mb-3">
-  <div class="info-box">
-    <div class="section-title">Dados</div>
-    <div class="kv"><div class="k">ID</div><div class="v mono"><?= (int)$inv['id'] ?></div></div>
-    <div class="kv"><div class="k">Emissão</div><div class="v mono"><?= br_date($inv['issue_date'] ?? '') ?></div></div>
-    <div class="kv"><div class="k">Viagem</div><div class="v mono"><?= br_date($inv['travel_date'] ?? '') ?></div></div>
-    <div class="kv"><div class="k">Âmbito</div><div class="v"><?= e($inv['scope'] ?: '—') ?></div></div>
-  </div>
+<!-- معلومات أساسية -->
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="card p-5">
+        <h3 class="mb-3 text-sm font-bold text-ink-950">Dados</h3>
+        <?php foreach ([
+            ['ID', (int)$inv['id'], 'mono'],
+            ['Emissão', br_date($inv['issue_date'] ?? ''), 'mono'],
+            ['Viagem', br_date($inv['travel_date'] ?? ''), 'mono'],
+            ['Âmbito', e($inv['scope'] ?: '—'), ''],
+        ] as [$k, $v, $cls]): ?>
+            <div class="flex items-start justify-between gap-3 border-b border-dashed border-ink-100 py-2 last:border-0">
+                <span class="text-sm text-ink-500"><?= $k ?></span>
+                <span class="text-right text-sm font-semibold text-ink-900 <?= $cls ?>"><?= $v ?></span>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-  <div class="info-box">
-    <div class="section-title">Cliente</div>
-    <div class="kv"><div class="k">Nome</div><div class="v"><?= e($inv['client_name'] ?? '—') ?></div></div>
-    <div class="kv"><div class="k">Documento</div><div class="v mono"><?= e($inv['client_document'] ?: '—') ?></div></div>
-    <div class="kv"><div class="k">PNR</div><div class="v mono"><?= e($inv['pnr_code'] ?: '—') ?></div></div>
-  </div>
+    <div class="card p-5">
+        <h3 class="mb-3 text-sm font-bold text-ink-950">Cliente</h3>
+        <?php foreach ([
+            ['Nome', e($inv['client_name'] ?? '—'), ''],
+            ['Documento', e($inv['client_document'] ?: '—'), 'mono'],
+            ['PNR', e($inv['pnr_code'] ?: '—'), 'mono'],
+        ] as [$k, $v, $cls]): ?>
+            <div class="flex items-start justify-between gap-3 border-b border-dashed border-ink-100 py-2 last:border-0">
+                <span class="text-sm text-ink-500"><?= $k ?></span>
+                <span class="text-right text-sm font-semibold text-ink-900 <?= $cls ?>"><?= $v ?></span>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-  <div class="info-box">
-    <div class="section-title">Fornecedor & Regras</div>
-    <div class="kv"><div class="k">Fornecedor</div><div class="v"><?= e($inv['supplier_name'] ?? '—') ?></div></div>
-    <div class="kv"><div class="k">Reembolso</div><div class="v"><?= e($inv['refund_rule'] ?: '—') ?></div></div>
-    <div class="kv"><div class="k">Alteração</div><div class="v"><?= e($inv['change_rule'] ?: '—') ?></div></div>
-  </div>
+    <div class="card p-5">
+        <h3 class="mb-3 text-sm font-bold text-ink-950">Fornecedor &amp; Regras</h3>
+        <?php foreach ([
+            ['Fornecedor', e($inv['supplier_name'] ?? '—'), ''],
+            ['Reembolso', e($inv['refund_rule'] ?: '—'), ''],
+            ['Alteração', e($inv['change_rule'] ?: '—'), ''],
+        ] as [$k, $v, $cls]): ?>
+            <div class="flex items-start justify-between gap-3 border-b border-dashed border-ink-100 py-2 last:border-0">
+                <span class="text-sm text-ink-500"><?= $k ?></span>
+                <span class="text-right text-sm font-semibold text-ink-900 <?= $cls ?>"><?= $v ?></span>
+            </div>
+        <?php endforeach; ?>
+    </div>
 </div>
 
 <!-- 1) Passageiros -->
-<div class="card mb-3">
-  <div class="card-header">
-    <h3 class="card-title">Passageiros</h3>
-    <div class="ms-auto text-muted">Total: <strong><?= money_br($sumPassengers) ?></strong></div>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-vcenter">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th style="width:90px">Tipo</th>
-          <th>Nº bilhete</th>
-          <th class="text-end" style="width:140px">Valor</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($passengers as $p): ?>
-          <tr>
-            <td class="fw-semibold"><?= e($p['name']) ?></td>
-            <td><span class="badge bg-secondary-lt"><?= e($p['ptype']) ?></span></td>
-            <td class="mono"><?= e($p['ticket_no']) ?></td>
-            <td class="text-end fw-semibold"><?= money_br($p['value']) ?></td>
-          </tr>
-        <?php endforeach; if (!$passengers): ?>
-          <tr><td colspan="4" class="text-muted">Sem passageiros.</td></tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
+<div class="card mb-5 overflow-hidden">
+    <div class="flex items-center justify-between border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Passageiros</h3>
+        <span class="text-sm text-ink-500">Total: <strong class="text-ink-900"><?= money_br($sumPassengers) ?></strong></span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table-modern min-w-[640px]">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th style="width:100px">Tipo</th>
+                    <th>Nº bilhete</th>
+                    <th class="text-right" style="width:150px">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($passengers as $p): ?>
+                    <tr>
+                        <td class="font-semibold text-ink-950"><?= e($p['name']) ?></td>
+                        <td><span class="badge-soft bg-ink-100 text-ink-600"><?= e($p['ptype']) ?></span></td>
+                        <td class="font-mono text-xs text-ink-600"><?= e($p['ticket_no']) ?></td>
+                        <td class="text-right font-semibold tabular-nums"><?= money_br($p['value']) ?></td>
+                    </tr>
+                <?php endforeach; if (!$passengers): ?>
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-sm text-ink-400">Sem passageiros.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- 2) Voos -->
-<div class="card mb-3">
-  <div class="card-header">
-    <h3 class="card-title">Segmentos (Voos)</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-vcenter">
-      <thead>
-        <tr>
-          <th style="width:70px">Cia</th>
-          <th style="width:90px">Nº voo</th>
-          <th>Origem</th>
-          <th>Destino</th>
-          <th style="width:90px">Classe</th>
-          <th style="width:110px">Bagagem</th>
-          <th style="width:120px">Loc Cia</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($segments as $s): ?>
-          <tr>
-            <td class="fw-semibold"><?= e($s['airline_code']) ?></td>
-            <td class="mono"><?= e($s['flight_no']) ?></td>
-            <td><?= e($s['origin']) ?></td>
-            <td><?= e($s['destination']) ?></td>
-            <td><span class="badge bg-azure-lt"><?= e($s['class']) ?></span></td>
-            <td><?= e($s['baggage']) ?></td>
-            <td class="mono"><?= e($s['record_locator']) ?></td>
-          </tr>
-        <?php endforeach; if (!$segments): ?>
-          <tr><td colspan="7" class="text-muted">Sem segmentos.</td></tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
+<div class="card mb-5 overflow-hidden">
+    <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Segmentos (Voos)</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table-modern min-w-[820px]">
+            <thead>
+                <tr>
+                    <th style="width:80px">Cia</th>
+                    <th style="width:100px">Nº voo</th>
+                    <th>Origem</th>
+                    <th>Destino</th>
+                    <th style="width:100px">Classe</th>
+                    <th style="width:120px">Bagagem</th>
+                    <th style="width:130px">Loc Cia</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($segments as $s): ?>
+                    <tr>
+                        <td class="font-semibold text-ink-950"><?= e($s['airline_code']) ?></td>
+                        <td class="font-mono text-xs"><?= e($s['flight_no']) ?></td>
+                        <td><?= e($s['origin']) ?></td>
+                        <td><?= e($s['destination']) ?></td>
+                        <td><span class="badge-soft bg-blue-100 text-blue-700"><?= e($s['class']) ?></span></td>
+                        <td class="text-ink-600"><?= e($s['baggage']) ?></td>
+                        <td class="font-mono text-xs text-ink-600"><?= e($s['record_locator']) ?></td>
+                    </tr>
+                <?php endforeach; if (!$segments): ?>
+                    <tr><td colspan="7" class="px-4 py-8 text-center text-sm text-ink-400">Sem segmentos.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- 3) Serviços (إن وجد) -->
 <?php if ($aux_rows): ?>
-  <div class="card mb-3">
-    <div class="card-header">
-      <h3 class="card-title">Serviços Auxiliares</h3>
-      <div class="ms-auto text-muted">Total: <strong><?= money_br($sumAux) ?></strong></div>
+<div class="card mb-5 overflow-hidden">
+    <div class="flex items-center justify-between border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Serviços Auxiliares</h3>
+        <span class="text-sm text-ink-500">Total: <strong class="text-ink-900"><?= money_br($sumAux) ?></strong></span>
     </div>
-    <div class="table-responsive">
-      <table class="table table-vcenter">
-        <thead>
-          <tr>
-            <th style="width:140px">Código</th>
-            <th>Serviço</th>
-            <th class="text-end" style="width:140px">Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($aux_rows as $a): ?>
-            <tr>
-              <td class="mono"><?= e($a['code'] ?: '—') ?></td>
-              <td>
-                <div class="fw-semibold"><?= e($a['service']) ?></div>
-                <?php if (!empty($a['service_type']) || !empty($a['start_date']) || !empty($a['end_date']) || !empty($a['details'])): ?>
-                  <div class="text-muted small">
-                    <?= e($saleServiceTypes[$a['service_type'] ?? ''] ?? ($a['service_type'] ?? '')) ?>
-                    <?php if (!empty($a['start_date']) || !empty($a['end_date'])): ?>
-                      · <?= e($a['start_date'] ?: '—') ?> → <?= e($a['end_date'] ?: '—') ?>
-                    <?php endif; ?>
-                    <?php if (!empty($a['details'])): ?>
-                      · <?= e($a['details']) ?>
-                    <?php endif; ?>
-                  </div>
-                <?php endif; ?>
-              </td>
-              <td class="text-end fw-semibold"><?= money_br($a['value']) ?></td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+    <div class="overflow-x-auto">
+        <table class="table-modern min-w-[640px]">
+            <thead>
+                <tr>
+                    <th style="width:160px">Código</th>
+                    <th>Serviço</th>
+                    <th class="text-right" style="width:150px">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($aux_rows as $a): ?>
+                    <tr>
+                        <td class="font-mono text-xs"><?= e($a['code'] ?: '—') ?></td>
+                        <td>
+                            <p class="font-semibold text-ink-950"><?= e($a['service']) ?></p>
+                            <?php if (!empty($a['service_type']) || !empty($a['start_date']) || !empty($a['end_date']) || !empty($a['details'])): ?>
+                                <p class="text-xs text-ink-400">
+                                    <?= e($saleServiceTypes[$a['service_type'] ?? ''] ?? ($a['service_type'] ?? '')) ?>
+                                    <?php if (!empty($a['start_date']) || !empty($a['end_date'])): ?>
+                                        · <?= e($a['start_date'] ?: '—') ?> → <?= e($a['end_date'] ?: '—') ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($a['details'])): ?>
+                                        · <?= e($a['details']) ?>
+                                    <?php endif; ?>
+                                </p>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-right font-semibold tabular-nums"><?= money_br($a['value']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
-  </div>
+</div>
 <?php endif; ?>
 
-<!-- ملخص مالي في النهاية -->
-<div class="card mb-3">
-  <div class="card-header">
-    <h3 class="card-title">Resumo financeiro</h3>
-  </div>
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-3">
-        <div class="text-muted">Total Cliente</div>
-        <div class="h2 m-0"><?= money_br($totalCliente) ?></div>
-      </div>
-      <div class="col-md-3">
-        <div class="text-muted">Líquido Fornecedor</div>
-        <div class="h2 m-0"><?= money_br($liquid) ?></div>
-      </div>
-      <div class="col-md-3">
-        <div class="text-muted">Margem/Lucro</div>
-        <div class="h2 m-0"><?= money_br($margin) ?></div>
-      </div>
-      <div class="col-md-3">
-        <div class="text-muted">Fornecedor pago?</div>
-        <div class="h2 m-0"><?= !empty($inv['supplier_paid']) ? 'Sim' : 'Não' ?></div>
-      </div>
-
-      <div class="col-12"><hr class="my-1"></div>
-
-      <div class="col-md-3">Tarifa fornecedor: <strong><?= money_br($inv['supplier_tarifa']) ?></strong></div>
-      <div class="col-md-3">Comissão fornecedor: <strong><?= money_br($inv['supplier_comissao']) ?></strong></div>
-      <div class="col-md-3">Passageiros: <strong><?= money_br($sumPassengers) ?></strong></div>
-      <div class="col-md-3">Serviços: <strong><?= money_br($sumAux) ?></strong></div>
+<!-- ملخص مالي -->
+<div class="card mb-5 overflow-hidden">
+    <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Resumo financeiro</h3>
     </div>
-  </div>
+    <div class="p-5">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="card p-4">
+                <p class="stat-label">Total Cliente</p>
+                <p class="stat-value"><?= money_br($totalCliente) ?></p>
+            </div>
+            <div class="card p-4">
+                <p class="stat-label">Líquido Fornecedor</p>
+                <p class="stat-value"><?= money_br($liquid) ?></p>
+            </div>
+            <div class="card p-4">
+                <p class="stat-label">Margem / Lucro</p>
+                <p class="stat-value <?= $margin >= 0 ? 'text-emerald-600' : 'text-red-500' ?>"><?= money_br($margin) ?></p>
+            </div>
+            <div class="card p-4">
+                <p class="stat-label">Fornecedor pago?</p>
+                <p class="stat-value"><?= !empty($inv['supplier_paid']) ? 'Sim' : 'Não' ?></p>
+            </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-2 border-t border-ink-100 pt-4 text-sm text-ink-600 md:grid-cols-2 xl:grid-cols-4">
+            <span>Tarifa fornecedor: <strong class="text-ink-900"><?= money_br($inv['supplier_tarifa']) ?></strong></span>
+            <span>Comissão fornecedor: <strong class="text-ink-900"><?= money_br($inv['supplier_comissao']) ?></strong></span>
+            <span>Passageiros: <strong class="text-ink-900"><?= money_br($sumPassengers) ?></strong></span>
+            <span>Serviços: <strong class="text-ink-900"><?= money_br($sumAux) ?></strong></span>
+        </div>
+    </div>
 </div>
 
 <!-- Prev/Next -->
-<div class="d-flex justify-content-between align-items-center my-4">
-  <div><a class="btn" href="/sales/index.php"><i class="ti ti-arrow-left me-1"></i>Voltar para lista</a></div>
-  <div class="btn-list">
-    <a class="btn btn-outline-secondary <?= $prev_id ? '' : 'disabled' ?>" href="<?= $prev_id ? '/sales/show.php?id='.$prev_id : '#' ?>">
-      <i class="ti ti-arrow-left me-1"></i>Anterior
+<div class="flex flex-wrap items-center justify-between gap-3">
+    <a href="/sales/index.php" class="btn-ghost">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Voltar para lista
     </a>
-    <a class="btn btn-outline-secondary <?= $next_id ? '' : 'disabled' ?>" href="<?= $next_id ? '/sales/show.php?id='.$next_id : '#' ?>">
-      Próxima <i class="ti ti-arrow-right ms-1"></i>
-    </a>
-  </div>
+    <div class="flex items-center gap-2">
+        <a class="btn-soft <?= $prev_id ? '' : 'pointer-events-none opacity-40' ?>" href="<?= $prev_id ? '/sales/show.php?id='.$prev_id : '#' ?>">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Anterior
+        </a>
+        <a class="btn-soft <?= $next_id ? '' : 'pointer-events-none opacity-40' ?>" href="<?= $next_id ? '/sales/show.php?id='.$next_id : '#' ?>">
+            Próxima
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+    </div>
 </div>
 
 <script>
@@ -413,28 +406,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function toast(msg, type='success') {
     const wrap = document.createElement('div');
-    wrap.style.position = 'fixed';
-    wrap.style.right = '16px';
-    wrap.style.bottom = '16px';
-    wrap.style.zIndex = 1050;
+    wrap.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:1050;';
+    const cls = type === 'success'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+      : 'border-red-200 bg-red-50 text-red-800';
     wrap.innerHTML = `
-      <div class="alert alert-${type} shadow-sm mb-0" role="alert">
-        <div class="d-flex align-items-center gap-2">
-          <i class="ti ti-${type==='success'?'circle-check':'alert-triangle'}"></i>
-          <div>${String(msg)}</div>
-        </div>
-      </div>
-    `;
+      <div class="rounded-xl border px-3.5 py-3 text-sm shadow-lg ${cls}" role="alert">
+        ${String(msg)}
+      </div>`;
     document.body.appendChild(wrap);
     setTimeout(()=> wrap.remove(), 2500);
   }
 
   function badgeClass(v){
     v = (v||'').toLowerCase().trim();
-    if (v==='pago') return 'bg-success';
-    if (v==='pago parcial') return 'bg-warning';
-    if (v==='nao pago' || v==='não pago') return 'bg-danger';
-    return 'bg-secondary';
+    if (v==='nao pago' || v==='não pago') return 'badge-soft bg-red-100 text-red-700';
+    if (v==='pago parcial') return 'badge-soft bg-amber-100 text-amber-700';
+    if (v==='pago') return 'badge-soft bg-emerald-100 text-emerald-700';
+    return 'badge-soft bg-ink-100 text-ink-600';
   }
 
   function updateBadge(v){
@@ -442,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const text  = document.getElementById('statusText');
     if (!badge || !text) return;
     text.textContent = statusLabel(v);
-    badge.className = 'badge text-white ' + badgeClass(v);
+    badge.className = badgeClass(v);
   }
 
   function statusLabel(v){
@@ -539,5 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
-
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
