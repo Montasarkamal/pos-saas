@@ -58,54 +58,63 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 
 $token = csrf_token();
 $pageTitle = 'Novo Usuário';
-require __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-2xl">
+  <form method="post" autocomplete="off" class="space-y-5">
+    <?php if ($err): ?>
+      <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+        <?= htmlspecialchars($err) ?>
+      </div>
+    <?php endif; ?>
 
-<div class="row justify-content-center">
-  <div class="col-md-7">
-    <form class="card" method="post" autocomplete="off">
-      <div class="card-header"><h3 class="card-title">Novo Usuário</h3></div>
-      <div class="card-body">
-        <?php if ($err): ?>
-          <div class="alert alert-danger" role="alert"><?= htmlspecialchars($err) ?></div>
-        <?php endif; ?>
-
-        <div class="mb-3">
-          <label class="form-label">Nome *</label>
-          <input class="form-control" name="name" value="<?= htmlspecialchars($form['name']) ?>" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">E-mail *</label>
-          <input class="form-control" name="email" type="email" value="<?= htmlspecialchars($form['email']) ?>" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Senha *</label>
-          <input class="form-control" name="password" type="password" required placeholder="mín. 8 caracteres">
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Papel</label>
-          <select class="form-select" name="role">
-            <option value="operador" <?= $form['role']==='operador'?'selected':'' ?>>operador</option>
-            <option value="admin" <?= $form['role']==='admin'?'selected':'' ?>>admin</option>
-          </select>
-        </div>
-
-        <div class="mb-3 form-check">
-          <input class="form-check-input" id="is_active" type="checkbox" name="is_active" <?= !empty($form['is_active']) ? 'checked' : '' ?>>
-          <label class="form-check-label" for="is_active">Ativo</label>
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Novo Usuário</h3>
+      </div>
+      <div class="p-5">
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="label-field">Nome *</label>
+            <input class="input-field" name="name" value="<?= htmlspecialchars($form['name']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field">E-mail *</label>
+            <input class="input-field" name="email" type="email" value="<?= htmlspecialchars($form['email']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field">Senha *</label>
+            <input class="input-field" name="password" type="password" required placeholder="mín. 8 caracteres">
+          </div>
+          <div>
+            <label class="label-field">Papel</label>
+            <select class="select-field" name="role">
+              <option value="operador" <?= $form['role'] === 'operador' ? 'selected' : '' ?>>operador</option>
+              <option value="admin" <?= $form['role'] === 'admin' ? 'selected' : '' ?>>admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="switch-item">
+              <input type="checkbox" id="is_active" name="is_active" <?= !empty($form['is_active']) ? 'checked' : '' ?>>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-text">Ativo</span>
+            </label>
+          </div>
         </div>
 
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($token) ?>">
       </div>
-      <div class="card-footer d-flex justify-content-between">
-        <a href="/users/index.php" class="btn">Cancelar</a>
-        <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy me-1"></i>Salvar</button>
-      </div>
-    </form>
-  </div>
-</div>
+    </div>
 
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <a class="btn-ghost" href="/users/index.php">Cancelar</a>
+      <button class="btn-primary px-6" type="submit">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar
+      </button>
+    </div>
+  </form>
+</div>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';

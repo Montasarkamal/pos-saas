@@ -76,91 +76,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $token = csrf_token();
 $pageTitle = 'Editar Fornecedor';
-require __DIR__ . '/../inc/header.php';
+ob_start();
 ?>
+<div class="mx-auto max-w-3xl">
+  <form method="post" autocomplete="off" class="space-y-5">
+    <?php if ($err): ?>
+      <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+        <?= htmlspecialchars($err) ?>
+      </div>
+    <?php endif; ?>
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <form class="card" method="post" autocomplete="off">
-                    <div class="card-header">
-                        <h3 class="card-title">Editar Fornecedor #<?= (int)$s['id'] ?></h3>
-                    </div>
-                    <div class="card-body">
-                        <?php if ($err): ?><div class="alert alert-danger"><?= htmlspecialchars($err) ?></div><?php endif; ?>
-
-                        <div class="mb-3">
-                            <label class="form-label">Tipo de Pessoa</label>
-                            <div class="form-selectgroup">
-                                <label class="form-selectgroup-item">
-                                    <input type="radio" name="supplier_type" value="pf" class="form-selectgroup-input" <?= $s['supplier_type']==='pf'?'checked':'' ?>>
-                                    <span class="form-selectgroup-label">Pessoa Física</span>
-                                </label>
-                                <label class="form-selectgroup-item">
-                                    <input type="radio" name="supplier_type" value="pj" class="form-selectgroup-input" <?= $s['supplier_type']==='pj'?'checked':'' ?>>
-                                    <span class="form-selectgroup-label">Pessoa Jurídica</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Nome / Razão Social *</label>
-                                <input class="form-control" name="name" id="nameField" value="<?= htmlspecialchars($s['name']) ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Documento (CPF/CNPJ) *</label>
-                                <input class="form-control" name="document" value="<?= htmlspecialchars($s['document']) ?>" required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Telefone</label>
-                                <input class="form-control" name="phone" value="<?= htmlspecialchars($s['phone']) ?>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">E-mail</label>
-                                <input class="form-control" type="email" name="email" value="<?= htmlspecialchars($s['email']) ?>">
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Endereço</label>
-                                <input class="form-control" name="address" value="<?= htmlspecialchars($s['address']) ?>">
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Notas</label>
-                                <textarea class="form-control" rows="5" name="notes"><?= htmlspecialchars($s['notes'] ?? '') ?></textarea>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_active" <?= !empty($s['is_active']) ? 'checked' : '' ?>>
-                                    <span class="form-check-label">Fornecedor Ativo</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <input type="hidden" name="csrf" value="<?= htmlspecialchars($token) ?>">
-                    </div>
-                    <div class="card-footer d-flex justify-content-between">
-                        <a href="/suppliers/show.php?id=<?= $id ?>" class="btn btn-link">Cancelar</a>
-                        <button class="btn btn-primary" type="submit">
-                            <i class="ti ti-device-floppy me-1"></i> Salvar Alterações
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <div class="card overflow-hidden">
+      <div class="border-b border-ink-100 px-5 py-4">
+        <h3 class="text-sm font-bold text-ink-950">Editar Fornecedor #<?= (int)$s['id'] ?></h3>
+      </div>
+      <div class="p-5">
+        <div class="mb-5">
+          <label class="label-field">Tipo de Pessoa</label>
+          <div class="rule-group">
+            <label class="rule-radio">
+              <input type="radio" name="supplier_type" value="pf" <?= $s['supplier_type'] === 'pf' ? 'checked' : '' ?>>
+              <span>Pessoa Física</span>
+            </label>
+            <label class="rule-radio">
+              <input type="radio" name="supplier_type" value="pj" <?= $s['supplier_type'] === 'pj' ? 'checked' : '' ?>>
+              <span>Pessoa Jurídica</span>
+            </label>
+          </div>
         </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label class="label-field">Nome / Razão Social *</label>
+            <input class="input-field" name="name" id="nameField" value="<?= htmlspecialchars($s['name']) ?>" required>
+          </div>
+          <div>
+            <label class="label-field">Documento (CPF/CNPJ) *</label>
+            <input class="input-field" name="document" value="<?= htmlspecialchars($s['document']) ?>" required>
+          </div>
+
+          <div>
+            <label class="label-field">Telefone</label>
+            <input class="input-field" name="phone" value="<?= htmlspecialchars($s['phone']) ?>">
+          </div>
+          <div>
+            <label class="label-field">E-mail</label>
+            <input class="input-field" type="email" name="email" value="<?= htmlspecialchars($s['email']) ?>">
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="label-field">Endereço</label>
+            <input class="input-field" name="address" value="<?= htmlspecialchars($s['address']) ?>">
+          </div>
+          <div class="md:col-span-2">
+            <label class="label-field">Notas</label>
+            <textarea class="input-field" rows="5" name="notes"><?= htmlspecialchars($s['notes'] ?? '') ?></textarea>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="switch-item">
+              <input type="checkbox" name="is_active" <?= !empty($s['is_active']) ? 'checked' : '' ?>>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-text">Fornecedor Ativo</span>
+            </label>
+          </div>
+        </div>
+
+        <input type="hidden" name="csrf" value="<?= htmlspecialchars($token) ?>">
+      </div>
     </div>
+
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <a class="btn-ghost" href="/suppliers/show.php?id=<?= $id ?>">Cancelar</a>
+      <button class="btn-primary px-6" type="submit">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Salvar Alterações
+      </button>
+    </div>
+  </form>
 </div>
 
 <script>
-document.getElementById('nameField').addEventListener('input', function(){
+// Nome em maiúsculas (visual)
+(function(){
+  const f = document.getElementById('nameField');
+  if (!f) return;
+  f.addEventListener('input', function(){
     const pos = this.selectionStart;
     this.value = this.value.toUpperCase();
     this.setSelectionRange(pos, pos);
-});
+  });
+})();
 </script>
-
-<?php require __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
