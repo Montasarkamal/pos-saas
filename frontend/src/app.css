@@ -80,6 +80,26 @@
          focus:outline-none focus-visible:ring-4 focus-visible:ring-ink-500/10;
 }
 
+/* Forms */
+@utility select-field {
+  @apply w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900
+         outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-500/10;
+}
+@utility label-field {
+  @apply mb-1.5 block text-sm font-medium text-ink-700;
+}
+
+/* Small/soft buttons (table actions) */
+@utility btn-soft {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-ink-200 bg-white
+         px-2.5 py-1.5 text-xs font-semibold text-ink-700 transition hover:bg-ink-50
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-500/20;
+}
+@utility btn-flex {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold
+         transition focus:outline-none focus-visible:ring-2;
+}
+
 /* App shell */
 @utility sidebar-link {
   @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-300
@@ -112,5 +132,27 @@
   }
   .table-modern tr:last-child td {
     @apply border-b-0;
+  }
+
+  /* PNR copy box */
+  .pnr-copy {
+    @apply relative inline-flex cursor-pointer select-none items-center gap-1.5 rounded-lg border
+           border-ink-200 bg-white px-2 py-1 font-mono text-xs font-bold tracking-[0.1em]
+           text-ink-800 transition hover:border-brand-300 hover:bg-brand-50;
+  }
+  .pnr-copy .pnr-tip {
+    @apply absolute right-0 top-0 hidden -translate-y-full rounded-md bg-emerald-500 px-1.5 py-0.5
+           text-[10px] font-semibold text-white shadow-md;
+  }
+  .pnr-copy.copied {
+    @apply border-emerald-300 bg-emerald-50;
+  }
+  .pnr-copy.copied .pnr-tip {
+    @apply inline-flex;
+  }
+
+  /* Soft badge */
+  .badge-soft {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
   }
 }

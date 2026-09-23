@@ -10,6 +10,7 @@ if (is_superadmin()) {
 
 require_once __DIR__ . '/inc/helpers.php';
 require_once __DIR__ . '/inc/metrics.php';
+require_once __DIR__ . '/inc/ui.php';
 
 $pageTitle = 'Painel de Controle';
 $agency_id = (int)agency_id();
@@ -50,29 +51,6 @@ if (has_table($pdo, 'invoices')) {
     } catch (Throwable $e) {
         error_log('[DASHBOARD_UPCOMING] ' . $e->getMessage());
     }
-}
-
-/* local helpers for the modern UI */
-function stat_status_badge(string $status): string
-{
-    $s = mb_strtolower($status);
-    if (str_contains($s, 'pago') && !str_contains($s, 'nao')) return 'bg-emerald-100 text-emerald-700';
-    if (str_contains($s, 'nao pago')) return 'bg-red-100 text-red-700';
-    if (str_contains($s, 'parcial')) return 'bg-amber-100 text-amber-700';
-    if (str_contains($s, 'cancel')) return 'bg-ink-100 text-ink-600';
-    return 'bg-ink-100 text-ink-600';
-}
-
-function stat_status_label(string $status): string
-{
-    $s = mb_strtolower(trim($status));
-    $map = [
-        'pago' => 'Pago',
-        'nao pago' => 'Não pago',
-        'parcial' => 'Parcial',
-        'cancelado' => 'Cancelado',
-    ];
-    return $map[$s] ?? (trim($status) !== '' ? $status : '—');
 }
 
 /* values for the monthly financial bars (Vendas / Pago / Pendente) */
@@ -219,7 +197,7 @@ ob_start();
                     <tr>
                         <td class="font-medium text-ink-950"><?= htmlspecialchars((string)($r['client_name'] ?? '—')) ?></td>
                         <td class="tabular-nums text-ink-700"><?= brl((float)$r['total_amount']) ?></td>
-                        <td><span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold <?= stat_status_badge((string)$r['status']) ?>"><?= htmlspecialchars(stat_status_label((string)$r['status'])) ?></span></td>
+                        <td><span class="<?= ui_status_badge((string)$r['status']) ?>"><?= htmlspecialchars(ui_status_label((string)$r['status'])) ?></span></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

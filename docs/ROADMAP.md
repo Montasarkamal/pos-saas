@@ -7,6 +7,25 @@
 
 ---
 
+## ✅ سجل الإنجاز (Progress Log)
+
+| التاريخ | ما تم | المرحلة |
+|---|---|---|
+| 2026-09-23 | Composer + PSR-4 autoload (`Kamaltur\` → `src/`) | 0 |
+| 2026-09-23 | نظام Migrations (`bin/migrate.php` + `database/migrations/`) + `schema_migrations` | 0 |
+| 2026-09-23 | Smoke tests (`tests/smoke.php` — 8 فحوصات ALL OK) | 0 |
+| 2026-09-23 | حذف `cadastro/` (محفوظ في فرع `archive/cadastro`) | 0 |
+| 2026-09-23 | خط إنتاج واجهة: Vite 6 + Tailwind 4 + Alpine.js → `assets/dist/` | 2 |
+| 2026-09-23 | Design System أولي + صفحة **Login** جديدة | 2 |
+| 2026-09-23 | Layout تطبيق جديد (`inc/layout.php`: سايد بار داكن + توب بار) | 2 |
+| 2026-09-23 | **Dashboard** محوّل (KPIs + رسم شهري + donut reembolsos + جداول) | 2 |
+| 2026-09-23 | **Vendas** (`sales/index.php`) محوّلة (فلاتر + sort + PNR copy + Mark Pago AJAX) | 2 |
+| 2026-09-23 | Demo data seeder (`local-setup/seed-demo-data.php`) | — |
+
+**المتبقي في المرحلة 2**: Clientes, Fornecedores, Reembolsos, Relatórios, Configurações, Master dashboard, ثم المرحلة 3 (اختبارات/CI).
+
+---
+
 ## 1) الوضع الحالي (التشخيص الصادق)
 
 | النقطة | الحالة الحالية | المشكلة |

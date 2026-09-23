@@ -40,3 +40,38 @@ if (!function_exists('vite_head')) {
         return $out;
     }
 }
+
+if (!function_exists('ui_status_badge')) {
+    /** Returns Tailwind classes for a soft status badge. */
+    function ui_status_badge(string $status): string
+    {
+        $s = mb_strtolower(trim($status));
+        if (str_contains($s, 'nao pago') || str_contains($s, 'não pago')) return 'badge-soft bg-red-100 text-red-700';
+        if (str_contains($s, 'parcial')) return 'badge-soft bg-amber-100 text-amber-700';
+        if (str_contains($s, 'pago')) return 'badge-soft bg-emerald-100 text-emerald-700';
+        if (str_contains($s, 'cancel')) return 'badge-soft bg-ink-100 text-ink-600';
+        return 'badge-soft bg-ink-100 text-ink-600';
+    }
+}
+
+if (!function_exists('ui_status_label')) {
+    /** Friendly PT-BR label for an invoice/refund status. */
+    function ui_status_label(string $status): string
+    {
+        $s = mb_strtolower(trim($status));
+        $map = [
+            'pago' => 'Pago',
+            'paid' => 'Pago',
+            'nao pago' => 'Não pago',
+            'não pago' => 'Não pago',
+            'unpaid' => 'Não pago',
+            'pago parcial' => 'Pago parcial',
+            'parcial' => 'Pago parcial',
+            'cancelado' => 'Cancelado',
+            'cancel' => 'Cancelado',
+            'solicitado' => 'Solicitado',
+            'finalizado' => 'Finalizado',
+        ];
+        return $map[$s] ?? (trim($status) !== '' ? $status : '—');
+    }
+}
