@@ -176,264 +176,281 @@ if (has_table($pdo, 'audit_logs')) {
 }
 
 $pageTitle = 'Master Dashboard';
-require_once __DIR__ . '/../inc/header.php';
+ob_start();
+require_once __DIR__ . '/../inc/ui.php';
+
+function master_icon(string $name): string {
+    $icons = [
+        'backup'    => '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>',
+        'company'   => '<path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="9" y1="12" x2="9.01" y2="12"></line><line x1="9" y1="15" x2="9.01" y2="15"></line><line x1="9" y1="18" x2="9.01" y2="18"></line>',
+        'list'      => '<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>',
+        'users'     => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+        'table'     => '<rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line>',
+        'dump'      => '<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5"></path><path d="M3 12a9 3 0 0 0 18 0"></path>',
+        'alert'     => '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
+        'check'     => '<polyline points="20 6 9 17 4 12"></polyline>',
+    ];
+    $body = $icons[$name] ?? $icons['alert'];
+    return '<svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $body . '</svg>';
+}
+function master_mini_icon(string $name): string {
+    return str_replace('h-5 w-5', 'h-4 w-4', master_icon($name));
+}
 ?>
-
-<style>
-.master-grid {
-  display: grid;
-  gap: 1rem;
-}
-.master-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .85rem;
-}
-.master-kpi {
-  background: #fff;
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  padding: 1rem;
-}
-.master-kpi-label {
-  color: #64748b;
-  font-size: .8rem;
-  margin-bottom: .2rem;
-}
-.master-kpi-value {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-.master-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr);
-  gap: 1rem;
-}
-.master-tools {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .75rem;
-}
-.master-tool {
-  display: flex;
-  gap: .8rem;
-  align-items: flex-start;
-  padding: .95rem;
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
-}
-.master-tool:hover { text-decoration: none; border-color: #206bc4; }
-.master-mini {
-  color: #64748b;
-  font-size: .85rem;
-}
-@media (max-width: 1200px) {
-  .master-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .master-layout { grid-template-columns: 1fr; }
-}
-@media (max-width: 767px) {
-  .master-kpis, .master-tools { grid-template-columns: 1fr; }
-}
-</style>
-
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <div class="page-pretitle">Superadmin</div>
-      <h2 class="page-title">Master Dashboard</h2>
-      <div class="text-muted small">Visão geral do sistema inteiro, não de uma empresa específica.</div>
+<!-- Header -->
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-brand-600">Superadmin</p>
+        <h2 class="text-xl font-bold text-ink-950">Master Dashboard</h2>
+        <p class="mt-0.5 text-sm text-ink-500">Visão geral do sistema inteiro, não de uma empresa específica.</p>
     </div>
-    <div class="col-auto ms-auto">
-      <div class="btn-list">
-        <a class="btn" href="/settings/index.php"><i class="ti ti-settings me-1"></i> Configurações</a>
-        <a class="btn btn-primary" href="/settings/backup.php"><i class="ti ti-database-export me-1"></i> Backup</a>
-      </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <a class="btn-ghost" href="/settings/index.php">Configurações</a>
+        <a class="btn-primary" href="/settings/backup.php">Backup</a>
     </div>
-  </div>
 </div>
 
-<div class="master-grid">
-  <div class="master-kpis">
-    <div class="master-kpi"><div class="master-kpi-label">Empresas</div><div class="master-kpi-value"><?= (int)$systemStats['agencies'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Usuários</div><div class="master-kpi-value"><?= (int)$systemStats['users'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Clientes</div><div class="master-kpi-value"><?= (int)$systemStats['clients'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Fornecedores</div><div class="master-kpi-value"><?= (int)$systemStats['suppliers'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Vendas</div><div class="master-kpi-value"><?= (int)$systemStats['sales'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Reembolsos</div><div class="master-kpi-value"><?= (int)$systemStats['refunds'] ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Total vendido</div><div class="master-kpi-value"><?= brl($systemStats['sales_total']) ?></div></div>
-    <div class="master-kpi"><div class="master-kpi-label">Alertas</div><div class="master-kpi-value"><?= count($alerts) ?></div></div>
-  </div>
+<!-- KPIs -->
+<div class="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="card p-4"><p class="stat-label">Empresas</p><p class="stat-value"><?= (int)$systemStats['agencies'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Usuários</p><p class="stat-value"><?= (int)$systemStats['users'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Clientes</p><p class="stat-value"><?= (int)$systemStats['clients'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Fornecedores</p><p class="stat-value"><?= (int)$systemStats['suppliers'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Vendas</p><p class="stat-value"><?= (int)$systemStats['sales'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Reembolsos</p><p class="stat-value"><?= (int)$systemStats['refunds'] ?></p></div>
+    <div class="card p-4"><p class="stat-label">Total vendido</p><p class="stat-value"><?= brl($systemStats['sales_total']) ?></p></div>
+    <div class="card p-4">
+        <p class="stat-label">Alertas</p>
+        <p class="stat-value <?= $alerts ? 'text-red-500' : 'text-emerald-600' ?>"><?= count($alerts) ?></p>
+    </div>
+</div>
 
-  <div class="master-layout">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Empresas</h3></div>
-      <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Empresa</th>
-              <th>Contato</th>
-              <th>Usuários</th>
-              <th>Clientes</th>
-              <th>Vendas</th>
-              <th>Última venda</th>
-              <th class="text-end">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($agencies as $agency): ?>
-              <tr>
-                <td><?= (int)$agency['id'] ?></td>
-                <td>
-                  <div class="fw-semibold"><?= h($agency['agency_name']) ?></div>
-                  <?php if (!empty($agency['cnpj'])): ?><div class="master-mini"><?= h((string)$agency['cnpj']) ?></div><?php endif; ?>
-                </td>
-                <td><?= h((string)($agency['email'] ?? '—')) ?></td>
-                <td><?= (int)$agency['users_count'] ?></td>
-                <td><?= (int)$agency['clients_count'] ?></td>
-                <td><?= (int)$agency['sales_count'] ?></td>
-                <td><?= ymd_to_br((string)($agency['last_sale_at'] ?? '')) ?></td>
-                <td class="text-end">
-                  <div class="btn-list justify-content-end flex-nowrap">
-                    <a class="btn btn-sm" href="/settings/company.php">Empresa</a>
-                    <a class="btn btn-sm" href="/users/index.php">Usuários</a>
-                    <a class="btn btn-sm" href="/settings/backup.php">Backup</a>
-                  </div>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-            <?php if ($agencies === []): ?>
-              <tr><td colspan="8" class="text-center text-muted p-4">Nenhuma empresa encontrada.</td></tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
+<!-- Layout principal: Empresas + (Saúde/Ferramentas) -->
+<div class="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+            <h3 class="text-sm font-bold text-ink-950">Empresas</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-modern min-w-[900px]">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empresa</th>
+                        <th>Contato</th>
+                        <th class="text-center">Usuários</th>
+                        <th class="text-center">Clientes</th>
+                        <th class="text-center">Vendas</th>
+                        <th>Última venda</th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($agencies as $agency): ?>
+                        <tr>
+                            <td class="font-mono text-xs"><?= (int)$agency['id'] ?></td>
+                            <td>
+                                <p class="font-semibold text-ink-950"><?= h($agency['agency_name']) ?></p>
+                                <?php if (!empty($agency['cnpj'])): ?>
+                                    <p class="text-xs text-ink-400"><?= h((string)$agency['cnpj']) ?></p>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-ink-600"><?= h((string)($agency['email'] ?? '—')) ?></td>
+                            <td class="text-center tabular-nums"><?= (int)$agency['users_count'] ?></td>
+                            <td class="text-center tabular-nums"><?= (int)$agency['clients_count'] ?></td>
+                            <td class="text-center tabular-nums"><?= (int)$agency['sales_count'] ?></td>
+                            <td class="font-mono text-xs"><?= ymd_to_br((string)($agency['last_sale_at'] ?? '')) ?></td>
+                            <td>
+                                <div class="flex justify-end gap-1.5">
+                                    <a class="btn-xs border border-ink-200 bg-white text-ink-700 hover:bg-ink-50" href="/settings/company.php">Empresa</a>
+                                    <a class="btn-xs border border-ink-200 bg-white text-ink-700 hover:bg-ink-50" href="/users/index.php">Usuários</a>
+                                    <a class="btn-xs border border-ink-200 bg-white text-ink-700 hover:bg-ink-50" href="/settings/backup.php">Backup</a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if ($agencies === []): ?>
+                        <tr><td colspan="8" class="px-4 py-8 text-center text-sm text-ink-400">Nenhuma empresa encontrada.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="d-grid gap-3">
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Saúde do sistema</h3></div>
-        <div class="list-group list-group-flush">
-          <?php foreach ($healthChecks as $check): ?>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-              <span><?= h($check['label']) ?></span>
-              <span class="badge <?= $check['ok'] ? 'bg-success-lt text-success' : 'bg-danger-lt text-danger' ?>">
-                <?= $check['ok'] ? 'OK' : 'Falha' ?>
-              </span>
+    <div class="grid gap-4">
+        <div class="card overflow-hidden">
+            <div class="border-b border-ink-100 px-5 py-4">
+                <h3 class="text-sm font-bold text-ink-950">Saúde do sistema</h3>
             </div>
-          <?php endforeach; ?>
+            <div class="p-5">
+                <?php foreach ($healthChecks as $check): ?>
+                    <div class="flex items-center justify-between gap-3 border-b border-dashed border-ink-100 py-2.5 last:border-0">
+                        <span class="text-sm text-ink-700"><?= h($check['label']) ?></span>
+                        <span class="badge-soft <?= $check['ok'] ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' ?>">
+                            <?= $check['ok'] ? 'OK' : 'Falha' ?>
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
-      </div>
 
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Ferramentas</h3></div>
-        <div class="card-body">
-          <div class="master-tools">
-            <a class="master-tool" href="/settings/backup.php"><i class="ti ti-database-export"></i><span><strong>Backup</strong><div class="master-mini">Exportar, importar e limpar dados.</div></span></a>
-            <a class="master-tool" href="/settings/company.php"><i class="ti ti-building-skyscraper"></i><span><strong>Empresa</strong><div class="master-mini">Dados da empresa ativa.</div></span></a>
-            <a class="master-tool" href="/settings/lists.php"><i class="ti ti-list-details"></i><span><strong>Listas</strong><div class="master-mini">Classes, bagagens e companhias.</div></span></a>
-            <a class="master-tool" href="/users/index.php"><i class="ti ti-users-cog"></i><span><strong>Usuários</strong><div class="master-mini">Controle de acesso e equipe.</div></span></a>
-            <a class="master-tool" href="/debug/db_viewer.php" target="_blank" rel="noopener"><i class="ti ti-table"></i><span><strong>DB Viewer</strong><div class="master-mini">Inspeção rápida das tabelas.</div></span></a>
-            <a class="master-tool" href="/debug/db_full_dump.php" target="_blank" rel="noopener"><i class="ti ti-database-search"></i><span><strong>DB Dump</strong><div class="master-mini">Leitura completa da base atual.</div></span></a>
-          </div>
+        <div class="card overflow-hidden">
+            <div class="border-b border-ink-100 px-5 py-4">
+                <h3 class="text-sm font-bold text-ink-950">Ferramentas</h3>
+            </div>
+            <div class="p-5">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/settings/backup.php">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('backup') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">Backup</span>
+                            <span class="block text-xs text-ink-500">Exportar, importar e limpar dados.</span>
+                        </span>
+                    </a>
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/settings/company.php">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('company') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">Empresa</span>
+                            <span class="block text-xs text-ink-500">Dados da empresa ativa.</span>
+                        </span>
+                    </a>
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/settings/lists.php">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('list') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">Listas</span>
+                            <span class="block text-xs text-ink-500">Classes, bagagens e companhias.</span>
+                        </span>
+                    </a>
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/users/index.php">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('users') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">Usuários</span>
+                            <span class="block text-xs text-ink-500">Controle de acesso e equipe.</span>
+                        </span>
+                    </a>
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/debug/db_viewer.php" target="_blank" rel="noopener">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('table') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">DB Viewer</span>
+                            <span class="block text-xs text-ink-500">Inspeção rápida das tabelas.</span>
+                        </span>
+                    </a>
+                    <a class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-3.5 transition hover:border-brand-300 hover:shadow-sm" href="/debug/db_full_dump.php" target="_blank" rel="noopener">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><?= master_mini_icon('dump') ?></span>
+                        <span>
+                            <span class="block text-sm font-bold text-ink-950">DB Dump</span>
+                            <span class="block text-xs text-ink-500">Leitura completa da base atual.</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <div class="row row-cards">
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Alertas</h3></div>
-        <div class="list-group list-group-flush">
-          <?php foreach (array_slice($alerts, 0, 10) as $alert): ?>
-            <div class="list-group-item text-danger"><?= h($alert) ?></div>
-          <?php endforeach; ?>
-          <?php if ($alerts === []): ?>
-            <div class="list-group-item text-success">Nenhum alerta importante agora.</div>
-          <?php endif; ?>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Últimos usuários</h3></div>
-        <div class="table-responsive">
-          <table class="table table-vcenter card-table">
-            <tbody>
-              <?php foreach ($recentUsers as $user): ?>
-                <tr>
-                  <td>
-                    <div class="fw-semibold"><?= h((string)$user['name']) ?></div>
-                    <div class="master-mini"><?= h((string)($user['agency_name'] ?? '—')) ?></div>
-                  </td>
-                  <td><?= h((string)($user['login'] ?: $user['email'])) ?></td>
-                  <td><span class="badge bg-azure-lt"><?= h((string)$user['role']) ?></span></td>
-                </tr>
-              <?php endforeach; ?>
-              <?php if ($recentUsers === []): ?>
-                <tr><td colspan="3" class="text-center text-muted p-4">Sem usuários recentes.</td></tr>
-              <?php endif; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Últimas vendas</h3></div>
-        <div class="table-responsive">
-          <table class="table table-vcenter card-table">
-            <tbody>
-              <?php foreach ($recentSales as $sale): ?>
-                <tr>
-                  <td>
-                    <div class="fw-semibold"><?= h((string)($sale['invoice_number'] ?: ('#' . $sale['id']))) ?></div>
-                    <div class="master-mini"><?= h((string)($sale['agency_name'] ?? '—')) ?></div>
-                  </td>
-                  <td><?= brl((float)$sale['total_amount']) ?></td>
-                  <td><span class="badge <?= status_badge_class((string)$sale['status']) ?>"><?= h(status_label((string)$sale['status'])) ?></span></td>
-                </tr>
-              <?php endforeach; ?>
-              <?php if ($recentSales === []): ?>
-                <tr><td colspan="3" class="text-center text-muted p-4">Sem vendas recentes.</td></tr>
-              <?php endif; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <?php if ($activity !== []): ?>
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Atividade recente</h3></div>
-      <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-          <thead><tr><th>ID</th><th>Ação</th><th>Usuário</th><th>Tabela</th><th>Registro</th><th>Data</th></tr></thead>
-          <tbody>
-            <?php foreach ($activity as $row): ?>
-              <tr>
-                <td><?= (int)($row['id'] ?? 0) ?></td>
-                <td><?= h((string)($row['action'] ?? $row['event'] ?? '—')) ?></td>
-                <td><?= h((string)($row['user_id'] ?? '—')) ?></td>
-                <td><?= h((string)($row['table_name'] ?? $row['entity'] ?? '—')) ?></td>
-                <td><?= h((string)($row['record_id'] ?? $row['entity_id'] ?? '—')) ?></td>
-                <td><?= ymd_to_br((string)($row['created_at'] ?? '')) ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<!-- Linha: Alertas / Usuários / Vendas -->
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+            <h3 class="text-sm font-bold text-ink-950">Alertas</h3>
+        </div>
+        <div class="p-5">
+            <?php foreach (array_slice($alerts, 0, 10) as $alert): ?>
+                <div class="flex items-start gap-2 border-b border-dashed border-ink-100 py-2.5 text-sm text-red-700 last:border-0">
+                    <span class="mt-0.5 text-red-500"><?= master_mini_icon('alert') ?></span>
+                    <span><?= h($alert) ?></span>
+                </div>
+            <?php endforeach; ?>
+            <?php if ($alerts === []): ?>
+                <div class="flex items-start gap-2 text-sm text-emerald-700">
+                    <span class="mt-0.5 text-emerald-500"><?= master_mini_icon('check') ?></span>
+                    <span>Nenhum alerta importante agora.</span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+            <h3 class="text-sm font-bold text-ink-950">Últimos usuários</h3>
+        </div>
+        <div class="p-5">
+            <?php foreach ($recentUsers as $user): ?>
+                <div class="flex items-start justify-between gap-3 border-b border-dashed border-ink-100 py-2.5 last:border-0">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-ink-950"><?= h((string)$user['name']) ?></p>
+                        <p class="truncate text-xs text-ink-400"><?= h((string)($user['agency_name'] ?? '—')) ?></p>
+                    </div>
+                    <div class="shrink-0 text-right">
+                        <p class="font-mono text-xs text-ink-600"><?= h((string)(($user['login'] ?? '') ?: ($user['email'] ?? ''))) ?></p>
+                        <span class="badge-soft bg-sky-100 text-sky-700"><?= h((string)$user['role']) ?></span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?php if ($recentUsers === []): ?>
+                <p class="px-4 py-8 text-center text-sm text-ink-400">Sem usuários recentes.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+            <h3 class="text-sm font-bold text-ink-950">Últimas vendas</h3>
+        </div>
+        <div class="p-5">
+            <?php foreach ($recentSales as $sale): ?>
+                <div class="flex items-center justify-between gap-3 border-b border-dashed border-ink-100 py-2.5 last:border-0">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-ink-950"><?= h((string)($sale['invoice_number'] ?: ('#' . $sale['id']))) ?></p>
+                        <p class="truncate text-xs text-ink-400"><?= h((string)($sale['agency_name'] ?? '—')) ?></p>
+                    </div>
+                    <div class="shrink-0 text-right">
+                        <p class="text-sm font-semibold tabular-nums text-ink-900"><?= brl((float)$sale['total_amount']) ?></p>
+                        <span class="<?= ui_status_badge((string)$sale['status']) ?>"><?= h(ui_status_label((string)$sale['status'])) ?></span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?php if ($recentSales === []): ?>
+                <p class="px-4 py-8 text-center text-sm text-ink-400">Sem vendas recentes.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<?php if ($activity !== []): ?>
+    <div class="card overflow-hidden">
+        <div class="border-b border-ink-100 px-5 py-4">
+            <h3 class="text-sm font-bold text-ink-950">Atividade recente</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-modern min-w-[820px]">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ação</th>
+                        <th>Usuário</th>
+                        <th>Tabela</th>
+                        <th>Registro</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($activity as $row): ?>
+                        <tr>
+                            <td class="font-mono text-xs"><?= (int)($row['id'] ?? 0) ?></td>
+                            <td><?= h((string)($row['action'] ?? $row['event'] ?? '—')) ?></td>
+                            <td class="font-mono text-xs"><?= h((string)($row['user_id'] ?? '—')) ?></td>
+                            <td><?= h((string)($row['table_name'] ?? $row['entity'] ?? '—')) ?></td>
+                            <td class="font-mono text-xs"><?= h((string)($row['record_id'] ?? $row['entity_id'] ?? '—')) ?></td>
+                            <td class="font-mono text-xs"><?= ymd_to_br((string)($row['created_at'] ?? '')) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
