@@ -3,6 +3,28 @@
 بعد ما الـ CI ينجح على `main`، بيتشغّل **job الـ deploy** اللي بينقل الملفات إلى
 الاستضافة عبر SSH (rsync) — **من غير ما يطبق migrations تلقائيًا** (ده قرار مسئول).
 
+## ✅ الوضع الحالي (تم تنفيذه في 2026-09-23)
+
+| العنصر | الحالة |
+|---|---|
+| الكود الجديد على الإنتاج | تم — السيرفر على آخر commit `7890a51` (سحب Git من hPanel) |
+| اتصال SSH بمفتاح الـ deploy | شغال — المفتاح العام متضاف في `~/.ssh/authorized_keys` |
+| بيانات الإنتاج | **سليمة وبتتقرا زيّ ما هي** — 207 عميل / 100 فاتورة / 12 مورّد / 135 مسافر (تحقق عملي عبر الطباعة العامة الموّقعة: فاتورة `260084` = `FEHMI BEJI` = `R$ 8.101,88`) |
+| PHP على الـ server | 8.2.33 (≥ 8.1 المطلوب) |
+| `.env` / `uploads/` / `DB/` | سليمين — rsync مستبعدهم نهائيًا |
+| Migrations | `001_base_schema.sql` **pending** (لم يُطبق — السيرفر مبني من schema.sql قديم). التطبيق إضافي فقط (create-if-not-exists بلا INSERTs) ولا يستدعي أي إجراء قبل تفعيل التلقائي |
+
+### بيانات الاتصال الفعلية
+
+- Host: `45.132.157.91` (port `65002`) — user: `u834141812` — deploy path: `/home/u834141812/domains/pos.kamaltur.com/public_html`
+- DB الإنتاج: `u834141812_pos` (34 جدول: 20 الأساسية + 13 legacy غير مستخدمة + `schema_migrations`)
+- المفتاح العام: `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPqX0HU/a9XxiCvg+FudzGcCBSLhl2kf9IVH/kDBDioB github-actions-deploy@pos-saas`
+
+### اللي لسه محتاج منك (لتفعيل النشر التلقائي)
+
+1. **GitHub Secrets** (انظر الجدول أدناه — كل القيم معروفة ومذكورة في هذا الملف).
+2. **Variable** `DEPLOY_ENABLED = true` في GitHub.
+
 ## إعداد لمرة واحدة
 
 ### 1) من لوحة Hostinger (hPanel)
@@ -35,12 +57,12 @@
 
 | الاسم | القيمة |
 |---|---|
-| `HOSTINGER_SSH_HOST` | الـ host من hPanel (IP أو hostname) |
-| `HOSTINGER_SSH_PORT` | الـ port (لو `22` متكتبهوش وخلاص، أو اكتبه) |
-| `HOSTINGER_SSH_USER` | يوزر الـ hPanel (زي `u1234567890`) |
-| `HOSTINGER_SSH_KEY` | **محتوى المفتاح الخاص** — كله (من `-----BEGIN OPENSSH PRIVATE KEY-----` للنهاية) |
-| `HOSTINGER_DEPLOY_PATH` | مسار التطبيق على السيرفر (زي `/home/u1234567890/domains/example.com/public_html`) |
-| `PROD_URL` (اختياري) | مينك الإنتاج (زي `https://example.com`) — للتأكد بعد النشر |
+| `HOSTINGER_SSH_HOST` | `45.132.157.91` |
+| `HOSTINGER_SSH_PORT` | `65002` |
+| `HOSTINGER_SSH_USER` | `u834141812` |
+| `HOSTINGER_SSH_KEY` | **محتوى المفتاح الخاص** — كله (من `-----BEGIN OPENSSH PRIVATE KEY-----` للنهاية) — اقرأه من جهازك: `cat ~/.ssh/pos-saas-hostinger-deploy` |
+| `HOSTINGER_DEPLOY_PATH` | `/home/u834141812/domains/pos.kamaltur.com/public_html` |
+| `PROD_URL` (اختياري) | `https://pos.kamaltur.com` — للتأكد بعد النشر |
 
 **Variable** (تبويب Variables):
 

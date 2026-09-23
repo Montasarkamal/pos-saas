@@ -56,12 +56,17 @@
 | 2026-09-23 | **CI (المرحلة 3b)**: `.github/workflows/ci.yml` (PHP 8.3 + MySQL 8 service + lint + migrations + seed + Pest + smoke + Vite build + HTTP smoke) + `tests/http-smoke.sh` (login حقيقي + 12 صفحة — بيتعاد استخدامه محليًا بـ `composer test:http`) | 3 |
 | 2026-09-23 | **Deploy (المرحلة 3c — جاهز)**: job `deploy` في الـ CI — rsync عبر SSH إلى Hostinger على push لـ `main` بعد نجاح الـ tests + fحص `migrate status` (من غير تطبيق تلقائي) + تطبيق migrations يدوي بـ workflow_dispatch. مقفول ورا variable `DEPLOY_ENABLED` + `docs/DEPLOY.md` | 3 |
 | 2026-09-23 | **إصلاح باگ autoload**: التطبيق كان بيستخدم `\Kamaltur\Money::margin()` في صفحات POST من غير تحميل composer autoload (fatal عند الإرسال) — `inc/autoload.php` خفيف (بيحل `Kamaltur\*` من `src/` مع أو من غير vendor) مربوط في `inc/db.php` + تحقق POST حقيقي (200 من غير أخطاء) | 3 |
+| 2026-09-23 | **نشر الإنتاج الفعلي (Phase 3c)**: السيرفر على آخر commit `7890a51` بالكود الجديد (سحب عبر Git من hPanel) — المفتاح العام اتضاف في `authorized_keys` عبر `ssh-copy-id`، اتصال SSH بالمفتاح شغال (host `45.132.157.91` port `65002` user `u834141812`)، PHP 8.2.33، `.env` و `uploads/` و `DB/` سليمين | 3 |
+| 2026-09-23 | **تحقق "يقرأ نفس البيانات" على الإنتاج ✅**: DB `u834141812_pos` (34 جدول = 20 الأساسية موجودة + 13 legacy غير مستخدمة + schema_migrations) — العدادات: 207 عميل، 100 فاتورة، 12 مورّد، 135 مسافر، 249 segment، 2 agencies، 2 users — `health.php` عبر الويب `{"status":"ok","database":"ok"}` — **الطباعة العامة موقّعة** (`sales/print.php` + `voucher.php` بــ `PUBLIC_LINK_SECRET`) عرضت الفاتورة الحقيقية `260084` بالعميل `FEHMI BEJI` والمبلغ `R$ 8.101,88` بالظبط (مطابق للـ DB) من غير أخطاء PHP | 3 |
+| 2026-09-23 | أدوات تشخيص للإنتاج (read-only): `tools/{snapshot_counts,describe_prod,prod_users,prod_samples,prod_public_link,prod-verify}.{php,sh}` — محظورة من الـ deploy (`tools/` مستبعدة) | 3 |
 
 **نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع).
 
 **المرحلة 3a (اختبارات Pest) مكتملة ✅**: 20 اختبار نجحوا (70 assertions) — التغطية: رقم الفاتورة (YY#### + incremental + ROLLBACK) + الهامش (الصيغة الدقيقة) + CSRF (valid/invalid/null/stability) + roles + multi-tenancy scope + helpers (brl/date/status).
 
 **المرحلة 3b (CI — GitHub Actions) مكتملة ✅**: `.github/workflows/ci.yml` على كل push/PR — PHP 8.3 + MySQL 8 service (DB جديدة `kamaltur_test`) → composer install + `php -l` لكل الملفات + migrations + seed + Pest + smoke + `npm ci` + build Vite + **HTTP smoke** (`tests/http-smoke.sh`: login حقيقي + مسح 12 صفحة على الـ shell الجديد). التالي: 3c (deploy تلقائي لـ Hostinger — يحتاج GitHub Secrets من عندك).
+
+**المرحلة 3c (Deploy) — الكود على الإنتاج بالفعل ✅ + التفعيل التلقائي محتاج خطوتين من عندك ⏳**: الكود الجديد (7890a51) شغال على `pos.kamaltur.com` (سحب Git من hPanel)، المفتاح العام متضاف في السيرفر، والبيانات اتأكدنا إنها بتتقرا زيّ ما هي (أرقام مطابقة). **متبقّي لتفعيل التلقائي**: (1) إضافة الـ GitHub Secrets الستة + `PROD_URL`، (2) تفعيل variable `DEPLOY_ENABLED=true` — كل التفاصيل في `docs/DEPLOY.md`.
 
 ---
 
