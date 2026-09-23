@@ -15,6 +15,23 @@ function setting_company_field(array $agency, string $field, ?string $fallback =
     return trim((string)($fallback ?? ''));
 }
 
+function settings_icon(string $name): string {
+    $icons = [
+        'company'   => '<path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="9" y1="12" x2="9.01" y2="12"></line><line x1="9" y1="15" x2="9.01" y2="15"></line><line x1="9" y1="18" x2="9.01" y2="18"></line>',
+        'shield'    => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+        'backup'    => '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>',
+        'list'      => '<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>',
+        'users'     => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+        'info'      => '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
+        'table'     => '<rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line>',
+        'schema'    => '<circle cx="12" cy="5" r="2.5"></circle><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle><line x1="10.5" y1="7" x2="6.5" y2="16.5"></line><line x1="13.5" y1="7" x2="17.5" y2="16.5"></line>',
+        'dump'      => '<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5"></path><path d="M3 12a9 3 0 0 0 18 0"></path>',
+        'columns'   => '<rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line>',
+    ];
+    $body = $icons[$name] ?? $icons['info'];
+    return '<svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $body . '</svg>';
+}
+
 $agency = null;
 try {
     $agencySelect = ['id', 'email', 'phone', 'cnpj', 'city', 'uf'];
@@ -71,221 +88,95 @@ try {
 }
 
 $pageTitle = 'Configurações';
-require_once __DIR__ . '/../inc/header.php';
+ob_start();
+?>
+<!-- Header -->
+<div class="mb-6">
+    <h2 class="text-xl font-bold text-ink-950">Configurações</h2>
+    <p class="mt-0.5 text-sm text-ink-500">Dados da empresa, listas, usuários, backup e rotinas administrativas.</p>
+</div>
+
+<!-- Hero -->
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div class="card p-6">
+        <p class="stat-label">Empresa ativa</p>
+        <h3 class="mt-1 text-xl font-bold text-ink-950"><?= h($agencyDisplay['name']) ?></h3>
+        <p class="mt-1 text-sm text-ink-500">
+            <?= h($agencyDisplay['legal_name']) ?>
+            <?php if ($agencyDisplay['cnpj'] !== ''): ?> · CNPJ <?= h($agencyDisplay['cnpj']) ?><?php endif; ?>
+        </p>
+        <p class="text-sm text-ink-500">
+            <?= h($agencyDisplay['email']) ?>
+            <?php if ($agencyDisplay['phone'] !== ''): ?> · <?= h($agencyDisplay['phone']) ?><?php endif; ?>
+            <?php if ($agencyDisplay['city_uf'] !== ''): ?> · <?= h($agencyDisplay['city_uf']) ?><?php endif; ?>
+        </p>
+        <div class="mt-4">
+            <a class="btn-primary" href="/settings/company.php">Editar dados da empresa</a>
+        </div>
+    </div>
+
+    <div class="card p-6">
+        <p class="stat-label mb-3">Resumo</p>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div class="rounded-xl bg-ink-50 p-4">
+                <p class="text-xs font-medium text-ink-400">Usuários</p>
+                <p class="stat-value"><?= (int)$stats['users'] ?></p>
+            </div>
+            <div class="rounded-xl bg-ink-50 p-4">
+                <p class="text-xs font-medium text-ink-400">Itens de listas</p>
+                <p class="stat-value"><?= (int)$stats['lists'] ?></p>
+            </div>
+            <div class="rounded-xl bg-ink-50 p-4">
+                <p class="text-xs font-medium text-ink-400">Empresas</p>
+                <p class="stat-value"><?= (int)$stats['company'] ?></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+function settings_action_card(string $href, string $icon, string $title, string $desc, bool $blank = false): void {
+    $target = $blank ? ' target="_blank" rel="noopener"' : '';
+    ?>
+    <a href="<?= htmlspecialchars($href) ?>"<?= $target ?> class="group flex gap-4 rounded-2xl border border-ink-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition group-hover:bg-brand-100">
+            <?= settings_icon($icon) ?>
+        </span>
+        <span>
+            <span class="block text-sm font-bold text-ink-950"><?= htmlspecialchars($title) ?></span>
+            <span class="mt-0.5 block text-sm leading-relaxed text-ink-500"><?= htmlspecialchars($desc) ?></span>
+        </span>
+    </a>
+    <?php
+}
 ?>
 
-<style>
-.settings-hero {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1.15fr .85fr;
-  align-items: stretch;
-}
-.settings-panel {
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  background: #fff;
-}
-.settings-panel-body { padding: 1.25rem; }
-.settings-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-.settings-action {
-  display: flex;
-  gap: .9rem;
-  min-height: 108px;
-  padding: .95rem 1rem;
-  border: 1px solid #dbe3ee;
-  border-radius: 8px;
-  background: #fff;
-  color: inherit;
-  text-decoration: none;
-  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
-}
-.settings-action:hover {
-  border-color: #206bc4;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-.settings-icon {
-  display: none;
-}
-.settings-action h3 { margin: 0 0 .3rem; font-size: .98rem; }
-.settings-action p { margin: 0; color: #64748b; line-height: 1.4; }
-.settings-action > span:last-child {
-  display: grid;
-  gap: .18rem;
-  align-content: start;
-}
-.settings-kpi {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: .75rem;
-}
-.settings-kpi-item {
-  padding: 1rem;
-  border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-.settings-subtitle {
-  margin: 1.5rem 0 .75rem;
-  color: #64748b;
-  font-size: .82rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-@media (max-width: 992px) {
-  .settings-hero,
-  .settings-actions-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 576px) {
-  .settings-kpi { grid-template-columns: 1fr; }
-}
-</style>
-
-<div class="page-header d-print-none mb-3">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Configurações</h2>
-      <div class="text-muted small">Dados da empresa, listas, usuários, backup e rotinas administrativas.</div>
-    </div>
-  </div>
+<div class="mb-3 flex items-center gap-2">
+    <h3 class="text-sm font-bold text-ink-950">Gestão</h3>
+    <div class="h-px flex-1 bg-ink-100"></div>
+</div>
+<div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <?php if (is_superadmin()): ?>
+        <?php settings_action_card('/master/dashboard.php', 'shield', 'Master dashboard', 'Visão global do sistema, saúde da base, empresas, alertas e ferramentas administrativas.'); ?>
+    <?php endif; ?>
+    <?php settings_action_card('/settings/company.php', 'company', 'Dados da empresa', 'Razão social, nome fantasia, CNPJ, endereço, contatos, dados bancários e imagens.'); ?>
+    <?php settings_action_card('/settings/backup.php', 'backup', 'Backup', 'Gerar uma cópia SQL da base local para restauração ou arquivo.'); ?>
+    <?php settings_action_card('/settings/lists.php', 'list', 'Atualizar listas', 'Classes, bagagens e companhias aéreas usadas nas vendas.'); ?>
+    <?php settings_action_card('/users/index.php', 'users', 'Gestão de usuários', 'Criar, editar, ativar, desativar e controlar acessos da equipe.'); ?>
+    <?php settings_action_card('/settings/about.php', 'info', 'Sobre o aplicativo', 'Versão atual ' . $stats['version'] . ', ambiente local e informações técnicas.'); ?>
 </div>
 
-<div class="settings-hero mb-3">
-  <div class="settings-panel">
-    <div class="settings-panel-body">
-      <div class="subheader mb-2">Empresa ativa</div>
-      <h1 class="h2 mb-2"><?= h($agencyDisplay['name']) ?></h1>
-      <div class="text-muted">
-        <?= h($agencyDisplay['legal_name']) ?>
-        <?php if ($agencyDisplay['cnpj'] !== ''): ?> · CNPJ <?= h($agencyDisplay['cnpj']) ?><?php endif; ?>
-      </div>
-      <div class="text-muted mt-1">
-        <?= h($agencyDisplay['email']) ?>
-        <?php if ($agencyDisplay['phone'] !== ''): ?> · <?= h($agencyDisplay['phone']) ?><?php endif; ?>
-        <?php if ($agencyDisplay['city_uf'] !== ''): ?> · <?= h($agencyDisplay['city_uf']) ?><?php endif; ?>
-      </div>
-      <div class="mt-3">
-        <a class="btn btn-primary" href="/settings/company.php">
-          <i class="ti ti-building-skyscraper me-1"></i> Editar dados da empresa
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="settings-panel">
-    <div class="settings-panel-body">
-      <div class="subheader mb-3">Resumo</div>
-      <div class="settings-kpi">
-        <div class="settings-kpi-item">
-          <div class="text-muted small">Usuários</div>
-          <div class="h2 m-0"><?= (int)$stats['users'] ?></div>
-        </div>
-        <div class="settings-kpi-item">
-          <div class="text-muted small">Itens de listas</div>
-          <div class="h2 m-0"><?= (int)$stats['lists'] ?></div>
-        </div>
-        <div class="settings-kpi-item">
-          <div class="text-muted small">Empresas</div>
-          <div class="h2 m-0"><?= (int)$stats['company'] ?></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="mb-3 flex items-center gap-2">
+    <h3 class="text-sm font-bold text-ink-950">Ferramentas Técnicas</h3>
+    <div class="h-px flex-1 bg-ink-100"></div>
+</div>
+<div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <?php settings_action_card('/debug/db_viewer.php', 'table', 'Database Viewer', 'Exibe tabelas, colunas, contagem de registros e primeiras linhas de cada tabela.'); ?>
+    <?php settings_action_card('/debug/db_structure.php', 'schema', 'DB Structure', 'Exibe a estrutura da base: nomes das colunas, tipos, chaves e presença de agency_id.'); ?>
+    <?php settings_action_card('/debug/db_full_dump.php', 'dump', 'Full DB Dump', 'Exibe todos os dados das tabelas no navegador. Ferramenta sensível, recomenda-se uso rápido.'); ?>
+    <?php settings_action_card('/debug/invoices_cols.php', 'columns', 'Invoices Columns', 'Exibe as colunas da tabela invoices para conferir os campos exigidos pelas vendas.'); ?>
 </div>
 
-<div class="settings-actions-grid">
-  <?php if (is_superadmin()): ?>
-  <a class="settings-action" href="/master/dashboard.php">
-    <span class="settings-icon"><i class="ti ti-shield-star"></i></span>
-    <span>
-      <h3>Master dashboard</h3>
-      <p>Visão global do sistema, saúde da base, empresas, alertas e ferramentas administrativas.</p>
-    </span>
-  </a>
-  <?php endif; ?>
-
-  <a class="settings-action" href="/settings/company.php">
-    <span class="settings-icon"><i class="ti ti-building-skyscraper"></i></span>
-    <span>
-      <h3>Dados da empresa</h3>
-      <p>Razão social, nome fantasia, CNPJ, endereço, contatos, dados bancários e imagens.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/settings/backup.php">
-    <span class="settings-icon"><i class="ti ti-database-export"></i></span>
-    <span>
-      <h3>Backup</h3>
-      <p>Gerar uma cópia SQL da base local para restauração ou arquivo.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/settings/lists.php">
-    <span class="settings-icon"><i class="ti ti-list-details"></i></span>
-    <span>
-      <h3>Atualizar listas</h3>
-      <p>Classes, bagagens e companhias aéreas usadas nas vendas.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/users/index.php">
-    <span class="settings-icon"><i class="ti ti-users-cog"></i></span>
-    <span>
-      <h3>Gestão de usuários</h3>
-      <p>Criar, editar, ativar, desativar e controlar acessos da equipe.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/settings/about.php">
-    <span class="settings-icon"><i class="ti ti-info-circle"></i></span>
-    <span>
-      <h3>Sobre o aplicativo</h3>
-      <p>Versão atual <?= h($stats['version']) ?>, ambiente local e informações técnicas do sistema.</p>
-    </span>
-  </a>
-</div>
-
-<div class="settings-subtitle">Ferramentas Técnicas</div>
-
-<div class="settings-actions-grid">
-  <a class="settings-action" href="/debug/db_viewer.php" target="_blank" rel="noopener">
-    <span class="settings-icon"><i class="ti ti-table"></i></span>
-    <span>
-      <h3>Database Viewer</h3>
-      <p>يعرض الجداول، الأعمدة، عدد السجلات، وأول صفوف من كل جدول لمراجعة البيانات بسرعة.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/debug/db_structure.php" target="_blank" rel="noopener">
-    <span class="settings-icon"><i class="ti ti-schema"></i></span>
-    <span>
-      <h3>DB Structure</h3>
-      <p>يعرض هيكل قاعدة البيانات فقط: أسماء الأعمدة، أنواعها، المفاتيح، وهل يوجد <code>agency_id</code>.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/debug/db_full_dump.php" target="_blank" rel="noopener">
-    <span class="settings-icon"><i class="ti ti-database-search"></i></span>
-    <span>
-      <h3>Full DB Dump</h3>
-      <p>يعرض كل بيانات الجداول بالكامل داخل المتصفح. أداة حساسة ومناسبة للمراجعة السريعة فقط.</p>
-    </span>
-  </a>
-
-  <a class="settings-action" href="/debug/invoices_cols.php" target="_blank" rel="noopener">
-    <span class="settings-icon"><i class="ti ti-columns-3"></i></span>
-    <span>
-      <h3>Invoices Columns</h3>
-      <p>يعرض أعمدة جدول <code>invoices</code> فقط للتأكد من وجود الحقول المطلوبة الخاصة بالمبيعات.</p>
-    </span>
-  </a>
-</div>
-
-<?php require_once __DIR__ . '/../inc/footer.php'; ?>
+<?php
+$body = ob_get_clean();
+require __DIR__ . '/../inc/layout.php';
