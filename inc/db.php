@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+// Autoloader خفيف لمساحة الاسم Kamaltur\ — شغال مع أو من غير Composer.
+require_once __DIR__ . '/autoload.php';
+
 if (!function_exists('load_dotenv_file')) {
   function load_dotenv_file(string $path): void {
     if (!is_readable($path)) return;

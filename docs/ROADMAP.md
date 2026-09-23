@@ -54,6 +54,8 @@
 | 2026-09-23 | **اختبارات Pest 4** (المرحلة 3a): `composer require --dev pestphp/pest` + scaffold + `Kamaltur\Money` (هامش/moeda) + اختبارات helpers/auth (CSRF + roles + agency scope) + InvoicesLib (رقم الفاتورة داخل transaction بـ ROLLBACK) — **20 passed (70 assertions)** | 3 |
 | 2026-09-23 | استخراج حساب الهامش لـ `src/Money.php` واستخدامه في `sales/create.php` + `sales/edit.php` (نفس الصيغة بالظبط — سلوك مطابق) + `composer test` بتشغّل smoke ثم pest | 3 |
 | 2026-09-23 | **CI (المرحلة 3b)**: `.github/workflows/ci.yml` (PHP 8.3 + MySQL 8 service + lint + migrations + seed + Pest + smoke + Vite build + HTTP smoke) + `tests/http-smoke.sh` (login حقيقي + 12 صفحة — بيتعاد استخدامه محليًا بـ `composer test:http`) | 3 |
+| 2026-09-23 | **Deploy (المرحلة 3c — جاهز)**: job `deploy` في الـ CI — rsync عبر SSH إلى Hostinger على push لـ `main` بعد نجاح الـ tests + fحص `migrate status` (من غير تطبيق تلقائي) + تطبيق migrations يدوي بـ workflow_dispatch. مقفول ورا variable `DEPLOY_ENABLED` + `docs/DEPLOY.md` | 3 |
+| 2026-09-23 | **إصلاح باگ autoload**: التطبيق كان بيستخدم `\Kamaltur\Money::margin()` في صفحات POST من غير تحميل composer autoload (fatal عند الإرسال) — `inc/autoload.php` خفيف (بيحل `Kamaltur\*` من `src/` مع أو من غير vendor) مربوط في `inc/db.php` + تحقق POST حقيقي (200 من غير أخطاء) | 3 |
 
 **نهاية المرحلة 2 🎉**: كل صفحات النظام (غير كُتيّبات الطباعة) على الـ layout الجديد — `inc/header.php` و `inc/footer.php` بقوا dead code (لا حذفها الآن احتياطًا للتراجع).
 
@@ -127,7 +129,7 @@
 ### المرحلة 3 — الجودة و CI/CD (أسبوع)
 - ✅ **Pest**: توليد رقم الفاتورة، حساب الهامش، عزل الـ multi-tenancy، الـ CSRF (+helpers +roles) — 20 اختبار أخضر.
 - ✅ **GitHub Actions** (`.github/workflows/ci.yml`): PHP 8.3 + MySQL 8 service + lint كل الملفات + migrations + seed + Pest + smoke + بناء Vite + HTTP smoke على كل push/PR.
-- ⏳ **Deploy تلقائي لـ Hostinger** عند push على `main` — يحتاج GitHub Secrets (SSH host/user/key من عند المستخدم).
+- ✅ **Deploy تلقائي لـ Hostinger** (جوه نفس الـ workflow): job `deploy` بعد نجاح الـ tests على push لـ `main` — rsync عبر SSH مع استبعاد `.env`/`uploads`/`vendor`، فحص `php bin/migrate.php status` (من غير تطبيق)، تطبيق الـ migrations يدوي بس عبر `workflow_dispatch` (`apply_migrations`). **محتاج يكمل: يفضل تضيف الـ GitHub Secrets + تفعّل variable `DEPLOY_ENABLED`** — الدليل كامل في `docs/DEPLOY.md`.
 
 ### المرحلة 4 — ميزات جديدة فوق القاعدة الحديثة (متواصلة)
 - Dashboards تفاعلية بالكامل مع فلاتر زمنية وحجز عملات.

@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      apply_migrations:
+        description: 'Apply pending DB migrations on the production server (risky — verify status first)'
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -97,3 +102,128 @@ jobs:
             sleep 1
           done
           bash tests/http-smoke.sh || { echo '--- php server log ---'; cat /tmp/php-server.log; exit 1; }
+
+  deploy:
+    name: Deploy to Hostinger (production)
+    runs-on: ubuntu-latest
+    needs: test
+    # Production deploys are opt-in: flip the DEPLOY_ENABLED repo variable to
+    # "true" only AFTER the GitHub secrets below have been added.
+    if: |
+      needs.test.result == 'success' &&
+      vars.DEPLOY_ENABLED == 'true' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Queue overlapping deploys instead of cancelling a half-finished rsync.
+    concurrency: deploy-hostinger
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22 (build assets)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build assets (Vite + Tailwind)
+        run: |
+          npm ci
+          npm run build
+        working-directory: frontend
+
+      - name: Check required secrets
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+        run: |
+          for v in SSH_HOST SSH_USER SSH_KEY DEPLOY_PATH; do
+            if [ -z "${!v}" ]; then
+              echo "Missing secret: $v — add it in repo Settings → Secrets and variables → Actions."
+              exit 1
+            fi
+          done
+          echo "All required secrets present."
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+        run: |
+          mkdir -p "$HOME/.ssh"
+          umask 077
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          PORT="${SSH_PORT:-22}"
+          ssh-keyscan -p "$PORT" "$SSH_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
+          sort -u -o "$HOME/.ssh/known_hosts" "$HOME/.ssh/known_hosts" 2>/dev/null || true
+
+      - name: Deploy files (rsync over SSH)
+        env:
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          DEST="$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
+          rsync -az --delete \
+            -e "ssh -i ${HOME}/.ssh/deploy_key -p ${PORT} -o StrictHostKeyChecking=yes" \
+            --exclude='.git/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='vendor/' \
+            --exclude='node_modules/' \
+            --exclude='frontend/' \
+            --exclude='public/' \
+            --exclude='tests/' \
+            --exclude='docs/' \
+            --exclude='.github/' \
+            --exclude='local-setup/' \
+            --exclude='tools/' \
+            --exclude='DB/' \
+            --exclude='backups/' \
+            --exclude='debug/' \
+            --exclude='uploads/' \
+            --exclude='.DS_Store' \
+            ./ "$DEST/"
+
+      - name: Production dry-run checks (php -l + migration status)
+        env:
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          SSH="ssh -i ${HOME}/.ssh/deploy_key -p ${PORT} -o StrictHostKeyChecking=yes $SSH_USER@$SSH_HOST"
+          $SSH "cd '$DEPLOY_PATH' && php -l inc/db.php && php -l inc/layout.php && php bin/migrate.php status"
+
+      - name: Apply pending migrations (only when explicitly requested)
+        if: ${{ github.event.inputs.apply_migrations == 'true' }}
+        env:
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          SSH="ssh -i ${HOME}/.ssh/deploy_key -p ${PORT} -o StrictHostKeyChecking=yes $SSH_USER@$SSH_HOST"
+          $SSH "cd '$DEPLOY_PATH' && php bin/migrate.php"
+
+      - name: Production smoke (only if PROD_URL is set)
+        env:
+          PROD_URL: ${{ secrets.PROD_URL }}
+        run: |
+          if [ -n "$PROD_URL" ]; then
+            code="$(curl -s -o /dev/null -w '%{http_code}' "$PROD_URL/login.php")"
+            echo "prod /login.php -> $code"
+            [ "$code" = "200" ] || exit 1
+          else
+            echo "PROD_URL not set — skipping production smoke check."
+          fi
