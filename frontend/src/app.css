@@ -79,3 +79,38 @@
          text-sm font-medium text-ink-700 transition hover:bg-ink-50 hover:text-ink-900
          focus:outline-none focus-visible:ring-4 focus-visible:ring-ink-500/10;
 }
+
+/* App shell */
+@utility sidebar-link {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-300
+         transition hover:bg-white/5 hover:text-white;
+}
+@utility sidebar-link-active {
+  @apply bg-brand-600/20 text-white;
+}
+
+/* Dashboard / stats */
+@utility stat-chip {
+  @apply flex h-11 w-11 items-center justify-center rounded-xl text-white;
+}
+@utility stat-label {
+  @apply text-[13px] font-medium text-ink-500;
+}
+@utility stat-value {
+  @apply mt-0.5 text-xl font-bold text-ink-950 tabular-nums;
+}
+@utility table-modern {
+  @apply w-full text-sm;
+}
+
+@layer components {
+  .table-modern th {
+    @apply border-b border-ink-200 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-ink-400;
+  }
+  .table-modern td {
+    @apply border-b border-ink-100 px-4 py-3 text-ink-900;
+  }
+  .table-modern tr:last-child td {
+    @apply border-b-0;
+  }
+}
