@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/inc/auth.php';
+require_once __DIR__ . '/inc/ui.php';
 
 $error = '';
 $maxAttempts = 5;
@@ -71,306 +72,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $loginCsrf = csrf_token();
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Login · KAMALTUR POS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100svh;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #f4fbff;
-    color: #102033;
-}
-
-.login-shell {
-    position: relative;
-    min-height: 100svh;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
-    align-items: stretch;
-    overflow: hidden;
-    background:
-        linear-gradient(90deg, rgba(242, 250, 255, .94) 0%, rgba(231, 246, 255, .84) 46%, rgba(255, 255, 255, .58) 100%),
-        url('/assets/img/bg-login.jpg') center / cover no-repeat;
-}
-
-.login-shell::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 18% 20%, rgba(56, 189, 248, .22), transparent 28%),
-        radial-gradient(circle at 62% 72%, rgba(34, 197, 94, .16), transparent 30%);
-    pointer-events: none;
-}
-
-.brand-panel,
-.login-panel {
-    position: relative;
-    z-index: 1;
-}
-
-.brand-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 100svh;
-    padding: clamp(28px, 5vw, 68px);
-}
-
-.brand-mark {
-    width: 158px;
-    height: auto;
-    filter: drop-shadow(0 10px 24px rgba(15, 118, 176, .16));
-}
-
-.brand-copy {
-    max-width: 560px;
-    animation: riseIn .65s ease both;
-}
-
-.eyebrow {
-    margin: 0 0 14px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0;
-    color: #0284c7;
-}
-
-.brand-copy h1 {
-    margin: 0;
-    max-width: 11ch;
-    font-size: clamp(44px, 8vw, 86px);
-    line-height: .96;
-    letter-spacing: 0;
-}
-
-.brand-copy p {
-    margin: 22px 0 0;
-    max-width: 470px;
-    font-size: clamp(16px, 1.7vw, 20px);
-    line-height: 1.6;
-    color: #475569;
-}
-
-.flight-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    color: #475569;
-    font-size: 13px;
-}
-
-.flight-meta span {
-    padding-top: 12px;
-    border-top: 1px solid rgba(14, 165, 233, .28);
-}
-
-.login-panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(20px, 4vw, 48px);
-    background: rgba(255, 255, 255, .78);
-    border-left: 1px solid rgba(14, 165, 233, .16);
-    backdrop-filter: blur(22px) saturate(150%);
-}
-
-.box {
-    width: 100%;
-    max-width: 390px;
-    animation: panelIn .5s ease .08s both;
-    background: rgba(255, 255, 255, .94);
-    border: 1px solid rgba(14, 165, 233, .16);
-    border-radius: 18px;
-    padding: 28px;
-    box-shadow: 0 22px 60px rgba(15, 118, 176, .15);
-}
-
-h2 {
-    margin: 0 0 8px;
-    color: #0f172a;
-    font-size: 30px;
-    line-height: 1.15;
-    letter-spacing: 0;
-}
-
-.subcopy {
-    margin: 0 0 28px;
-    color: #64748b;
-    line-height: 1.55;
-}
-
-input {
-    width: 100%;
-    height: 52px;
-    padding: 0 16px;
-    margin-bottom: 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #f8fbff;
-    color: #0f172a;
-    font: inherit;
-    outline: none;
-    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-}
-
-input:focus {
-    border-color: #38bdf8;
-    background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(56, 189, 248, .18);
-}
-
-input::placeholder {
-    color: #64748b;
-}
-
-button {
-    width: 100%;
-    height: 52px;
-    margin-top: 4px;
-    background: linear-gradient(135deg, #0ea5e9, #22c55e);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font: inherit;
-    font-weight: 800;
-    transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
-    box-shadow: 0 18px 38px rgba(14, 165, 233, .24);
-}
-
-button:hover {
-    background: linear-gradient(135deg, #0284c7, #16a34a);
-    transform: translateY(-1px);
-    box-shadow: 0 22px 44px rgba(14, 165, 233, .34);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-.error {
-    color: #991b1b;
-    background: #fff1f2;
-    border: 1px solid rgba(248, 113, 113, .42);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    text-align: left;
-    font-size: 14px;
-}
-
-.link {
-    margin-top: 22px;
-    text-align: center;
-    color: #64748b;
-    font-size: 14px;
-}
-
-.link a {
-    color: #0284c7;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.link a:hover {
-    color: #0369a1;
-    text-decoration: underline;
-}
-
-@keyframes riseIn {
-    from { opacity: 0; transform: translateY(18px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes panelIn {
-    from { opacity: 0; transform: translateX(14px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@media (max-width: 860px) {
-    .login-shell {
-        grid-template-columns: 1fr;
-    }
-
-    .brand-panel {
-        min-height: 44svh;
-        padding-bottom: 20px;
-    }
-
-    .login-panel {
-        align-items: flex-start;
-        min-height: 56svh;
-        border-left: 0;
-        border-top: 1px solid rgba(14, 165, 233, .16);
-    }
-
-    .brand-copy h1 {
-        max-width: 9ch;
-        font-size: clamp(38px, 12vw, 58px);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation: none !important;
-        transition: none !important;
-    }
-}
-</style>
+<meta name="color-scheme" content="light">
+<?= vite_head() ?>
 </head>
-<body>
+<body class="min-h-svh bg-ink-50">
 
-<main class="login-shell">
-    <section class="brand-panel" aria-label="KamalTur POS">
-        <img class="brand-mark" src="/assets/img/kamaltur.png" alt="KamalTur">
-
-        <div class="brand-copy">
-            <p class="eyebrow">KAMALTUR POS</p>
-            <h1>Controle de viagens</h1>
-            <p>Faturas, passageiros e serviços em um ambiente seguro para a operação da agência.</p>
+<main class="grid min-h-svh lg:grid-cols-[1.15fr_minmax(0,30rem)]">
+    <!-- ============ Brand panel ============ -->
+    <section class="relative hidden overflow-hidden bg-ink-950 lg:flex lg:flex-col lg:justify-between lg:p-12"
+             aria-label="KAMALTUR POS">
+        <!-- decorative background -->
+        <div class="pointer-events-none absolute inset-0">
+            <div class="absolute inset-0 bg-[radial-gradient(60rem_40rem_at_18%_18%,rgba(98,115,242,.35),transparent_55%)]"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(50rem_34rem_at_85%_85%,rgba(6,182,212,.22),transparent_55%)]"></div>
+            <div class="absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full border border-white/10"></div>
+            <div class="absolute -right-24 -top-24 h-[24rem] w-[24rem] rounded-full border border-white/10"></div>
+            <div class="absolute inset-0 opacity-[0.05]"
+                 style="background-image:url('/assets/img/bg-login.jpg');background-size:cover;background-position:center;"></div>
         </div>
 
-        <div class="flight-meta" aria-label="Informações da operação">
-            <span>São Paulo</span>
+        <div class="relative">
+            <img src="/assets/img/kamaltur.png" alt="KamalTur"
+                 class="h-12 w-auto drop-shadow-lg">
+        </div>
+
+        <div class="relative max-w-md">
+            <p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-accent-400">KAMALTUR POS</p>
+            <h1 class="text-4xl font-extrabold leading-[1.05] text-white xl:text-5xl">
+                O controle de viagens<br>num só painel.
+            </h1>
+            <p class="mt-5 text-base leading-relaxed text-ink-300">
+                Faturas, passageiros, fornecedores e reembolsos em um ambiente seguro
+                e organizado para a operação da agência.
+            </p>
+        </div>
+
+        <div class="relative flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-400">
+            <span>KAMALTUR VIAGENS</span>
             <span>Operação de viagens</span>
             <span>Acesso restrito</span>
         </div>
     </section>
 
-    <section class="login-panel" aria-label="Login">
-        <div class="box">
-            <h2>Acesse sua conta</h2>
-            <p class="subcopy">Entre para continuar no painel operacional.</p>
-
-            <?php if ($error): ?>
-                <div class="error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
-
-            <form method="post" autocomplete="on">
-                <input type="hidden" name="csrf" value="<?= htmlspecialchars($loginCsrf, ENT_QUOTES, 'UTF-8') ?>">
-                <input type="text" name="identifier" placeholder="Login ou e-mail" autocomplete="username" aria-label="Login ou e-mail" required autofocus>
-                <input type="password" name="password" placeholder="Senha" autocomplete="current-password" aria-label="Senha" required>
-                <button type="submit">Entrar</button>
-            </form>
-
-            <div class="link">
-                <a href="/register.php">Criar conta</a>
+    <!-- ============ Login panel ============ -->
+    <section class="flex items-center justify-center bg-ink-50 px-5 py-10 sm:px-10"
+             aria-label="Login">
+        <div class="w-full max-w-sm">
+            <div class="mb-8 flex items-center gap-3 lg:hidden">
+                <img src="/assets/img/kamaltur.png" alt="KamalTur" class="h-9 w-auto">
             </div>
+
+            <div class="card p-7 shadow-xl shadow-ink-900/5">
+                <h2 class="text-2xl font-bold text-ink-950">Acesse sua conta</h2>
+                <p class="mt-1 text-sm text-ink-500">Entre para continuar no painel operacional.</p>
+
+                <?php if ($error): ?>
+                    <div class="mt-5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800" role="alert">
+                        <svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span><?= htmlspecialchars($error) ?></span>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" autocomplete="on" class="mt-6 space-y-4">
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($loginCsrf, ENT_QUOTES, 'UTF-8') ?>">
+
+                    <div>
+                        <label for="identifier" class="mb-1.5 block text-sm font-medium text-ink-700">Login ou e-mail</label>
+                        <input id="identifier" type="text" name="identifier" placeholder="seu@email.com"
+                               autocomplete="username" required autofocus class="input-field">
+                    </div>
+
+                    <div>
+                        <label for="password" class="mb-1.5 block text-sm font-medium text-ink-700">Senha</label>
+                        <input id="password" type="password" name="password" placeholder="••••••••"
+                               autocomplete="current-password" required class="input-field">
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full">
+                        Entrar
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <p class="mt-6 text-center text-sm text-ink-500">
+                Ainda não tem acesso?
+                <a href="/register.php" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">Criar conta</a>
+            </p>
         </div>
     </section>
 </main>

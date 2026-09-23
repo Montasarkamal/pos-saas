@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind content sources — scan the server-rendered PHP pages
+ * (relative to this stylesheet: frontend/src/app.css).
+ */
+@source "../../*.{php,html}";
+@source "../../inc/**/*.php";
+@source "../../{sales,clients,suppliers,services,refunds,reports,settings,master,users}/**/*.php";
+@source "../../assets/**/*.{js,ts}";
+
+/*
+ * KAMALTUR POS — design system (Phase 2, first pass)
+ * Brand: deep navy + cyan accent, travel/operations feel.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Brand palette */
+  --color-brand-50:  #eef4ff;
+  --color-brand-100: #dfeaff;
+  --color-brand-200: #c7d8fe;
+  --color-brand-300: #a5bdfc;
+  --color-brand-400: #8198f8;
+  --color-brand-500: #6273f2;
+  --color-brand-600: #4c52e5;
+  --color-brand-700: #4041ca;
+  --color-brand-800: #3638a3;
+  --color-brand-900: #303381;
+  --color-brand-950: #1d1e4b;
+
+  /* Neutral "ink" (better contrast than pure gray) */
+  --color-ink-50:  #f5f6fa;
+  --color-ink-100: #eceef4;
+  --color-ink-200: #d4d8e3;
+  --color-ink-300: #b0b7c9;
+  --color-ink-400: #8690a8;
+  --color-ink-500: #67728d;
+  --color-ink-600: #525a73;
+  --color-ink-700: #43495e;
+  --color-ink-800: #3a3f4f;
+  --color-ink-900: #23263a;
+  --color-ink-950: #14162a;
+
+  /* Accent */
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+}
+
+/* Base */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-ink-50 text-ink-900;
+  }
+}
+
+/* Small reusable utilities */
+@utility card {
+  @apply bg-white rounded-2xl border border-ink-200/60 shadow-sm;
+}
+@utility input-field {
+  @apply w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900
+         placeholder:text-ink-300 outline-none transition
+         focus:border-brand-400 focus:ring-4 focus:ring-brand-500/10;
+}
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm
+         font-semibold text-white transition hover:bg-brand-700 focus:outline-none
+         focus-visible:ring-4 focus-visible:ring-brand-500/30 active:scale-[.98] disabled:opacity-60;
+}
+@utility btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5
+         text-sm font-medium text-ink-700 transition hover:bg-ink-50 hover:text-ink-900
+         focus:outline-none focus-visible:ring-4 focus-visible:ring-ink-500/10;
+}
