@@ -27,33 +27,37 @@ function demo_agency_has_data(PDO $pdo, int $agencyId, string $table): bool
 $out = [];
 
 // ---- Clients -----------------------------------------------------------
-if (!demo_agency_has_data($pdo, $agencyId, 'clients')) {
-    $clients = [
-        ['pf', 'Ana Beatriz Souza', '382.456.788-90', '(11) 98811-2233', 'ana.souza@gmail.com', '1988-03-14'],
-        ['pf', 'Carlos Eduardo Lima', '177.204.665-33', '(21) 99722-4410', 'carlos.lima@gmail.com', '1979-11-02'],
-        ['pj', 'Hotel Mar Azul Ltda', '12.345.678/0001-90', '(41) 3333-2211', 'contato@marazul.com.br', null],
-        ['pf', 'Fernanda Rocha', '299.103.447-52', '(31) 98210-7788', 'fefe.rocha@outlook.com', '1992-07-25'],
-    ];
-    $ins = $pdo->prepare("INSERT INTO clients (client_type, name, document, phone, email, birth_date, agency_id, created_by) VALUES (?,?,?,?,?,?,?,1)");
-    foreach ($clients as $c) {
-        $ins->execute($c);
+$existingClients = $pdo->query("SELECT name FROM clients WHERE agency_id={$agencyId}")->fetchAll(PDO::FETCH_COLUMN);
+$clientCandidates = [
+    ['pf', 'Ana Beatriz Souza', '382.456.788-90', '(11) 98811-2233', 'ana.souza@gmail.com', '1988-03-14'],
+    ['pf', 'Carlos Eduardo Lima', '177.204.665-33', '(21) 99722-4410', 'carlos.lima@gmail.com', '1979-11-02'],
+    ['pj', 'Hotel Mar Azul Ltda', '12.345.678/0001-90', '(41) 3333-2211', 'contato@marazul.com.br', null],
+    ['pf', 'Fernanda Rocha', '299.103.447-52', '(31) 98210-7788', 'fefe.rocha@outlook.com', '1992-07-25'],
+];
+$newClients = array_filter($clientCandidates, fn($c) => !in_array($c[1], $existingClients, true));
+if ($newClients !== []) {
+    $ins = $pdo->prepare("INSERT INTO clients (client_type, name, document, phone, email, birth_date, agency_id) VALUES (?,?,?,?,?,?,?)");
+    foreach ($newClients as $c) {
+        $ins->execute([...$c, $agencyId]);
     }
-    $out[] = 'clients +' . count($clients);
+    $out[] = 'clients +' . count($newClients);
 }
 
 // ---- Suppliers ---------------------------------------------------------
-if (!demo_agency_has_data($pdo, $agencyId, 'suppliers')) {
-    $suppliers = [
-        ['GOLLOG S.A.', '06.164.253/0001-87', '(11) 4003-1212'],
-        ['LATAM Airlines Brasil', '02.012.862/0001-60', '(11) 4002-5700'],
-        ['Azul Linhas Aereas', '09.305.994/0001-29', '(11) 4003-1118'],
-        ['Hotel Transamerica', '54.693.391/0001-04', '(11) 3432-8750'],
-    ];
+$existingSuppliers = $pdo->query("SELECT name FROM suppliers WHERE agency_id={$agencyId}")->fetchAll(PDO::FETCH_COLUMN);
+$supplierCandidates = [
+    ['GOLLOG S.A.', '06.164.253/0001-87', '(11) 4003-1212'],
+    ['LATAM Airlines Brasil', '02.012.862/0001-60', '(11) 4002-5700'],
+    ['Azul Linhas Aereas', '09.305.994/0001-29', '(11) 4003-1118'],
+    ['Hotel Transamerica', '54.693.391/0001-04', '(11) 3432-8750'],
+];
+$newSuppliers = array_filter($supplierCandidates, fn($s) => !in_array($s[0], $existingSuppliers, true));
+if ($newSuppliers !== []) {
     $ins = $pdo->prepare("INSERT INTO suppliers (supplier_type, name, document, phone, agency_id) VALUES ('pj',?,?,?,?)");
-    foreach ($suppliers as $s) {
+    foreach ($newSuppliers as $s) {
         $ins->execute([...$s, $agencyId]);
     }
-    $out[] = 'suppliers +' . count($suppliers);
+    $out[] = 'suppliers +' . count($newSuppliers);
 }
 
 // ---- Invoices (current month) -----------------------------------------
